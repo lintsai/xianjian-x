@@ -290,7 +290,7 @@
       this.addItem(itemA, -1);
       this.addItem(itemB, -1);
       this.addItem(product.id, 1);
-      const recStr = `${PalX.ITEMS[itemA].name} + ${PalX.ITEMS[itemB].name} ➔ ${product.name}`;
+      const recStr = `${PalX.ITEMS[itemA].name} + ${PalX.ITEMS[itemB].name} → ${product.name}`;
       if (!this.state.discoveredRecipes.includes(recStr)) {
         this.state.discoveredRecipes.unshift(recStr);
       }
@@ -524,7 +524,7 @@
 
     getStepDuration(dx, dy) {
       const sprint = !!(this.sprintToggle || this.keysDown.ShiftLeft || this.keysDown.ShiftRight);
-      const base = sprint ? 0.094 : 0.132;
+      const base = sprint ? 0.135 : 0.20;
       const isWideHoriz = (dx !== 0 && dy !== 0 && dx !== dy);
       return isWideHoriz ? base * 1.35 : base;
     }
@@ -763,6 +763,7 @@
       const startRx = this.stepAnim && this.stepAnim.active ? this.renderPlayer.x : oldX;
       const startRy = this.stepAnim && this.stepAnim.active ? this.renderPlayer.y : oldY;
 
+      this.totalSteps = (this.totalSteps || 0) + 1;
       this.footsteps.push({ x: oldX, y: oldY, life: 0.42, maxLife: 0.42 });
       if (this.footsteps.length > 10) this.footsteps.shift();
 
@@ -2683,8 +2684,13 @@
 
       this.isMoving = moved || (this.stepAnim && this.stepAnim.active) || this.movePath.length > 0;
       if (this.isMoving) {
-        const sprintMul = (this.sprintToggle || this.keysDown.ShiftLeft || this.keysDown.ShiftRight) ? 1.32 : 1;
-        this.walkPhase += dt * 14 * sprintMul;
+        if (this.stepAnim && this.stepAnim.active) {
+          const p = Math.min(1, this.stepAnim.elapsed / Math.max(0.01, this.stepAnim.duration));
+          this.walkPhase = (this.totalSteps || 0) * Math.PI + p * Math.PI;
+        } else {
+          const sprintMul = (this.sprintToggle || this.keysDown.ShiftLeft || this.keysDown.ShiftRight) ? 1.32 : 1;
+          this.walkPhase += dt * 10 * sprintMul;
+        }
       }
 
       // 明雷怪物巡邏與子格平滑插值

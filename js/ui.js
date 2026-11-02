@@ -34,21 +34,17 @@
     resizeCanvas() {
       const viewport = document.querySelector('.canvas-viewport');
       const canvas = this.game.canvas;
-      if (!viewport || !canvas) return;
-      const vw = viewport.clientWidth || window.innerWidth;
-      const vh = viewport.clientHeight || window.innerHeight;
+      if (!canvas) return;
+      const vw = (viewport && viewport.clientWidth > 0) ? viewport.clientWidth : window.innerWidth;
+      const vh = (viewport && viewport.clientHeight > 0) ? viewport.clientHeight : window.innerHeight;
       if (vw <= 0 || vh <= 0) return;
 
       // 經典仙劍 2.5D 黃金鏡頭比例：適度拉近視角，人物與精緻場景主體突出，杜絕遠景螻蟻感
-      let logicalW = 840;
+      let logicalW = 880;
       if (vw < 640 || vh > vw) {
-        logicalW = Math.max(400, Math.min(540, Math.round(vw * 1.12)));
-      } else if (vw > 1200) {
-        logicalW = 880;
+        logicalW = Math.max(420, Math.min(540, Math.round(vw * 1.15)));
       }
-      const logicalH = Math.max(360, Math.round(logicalW * (vh / vw)));
       this.game.logicalW = logicalW;
-      this.game.logicalH = logicalH;
 
       // 原生 High-DPI / DevicePixelRatio 像素緩衝區支持，消弭瀏覽器拉伸模糊，畫面極致銳利清晰
       const dpr = Math.min(2.5, window.devicePixelRatio || 1);
@@ -58,11 +54,12 @@
         canvas.width = targetW;
         canvas.height = targetH;
       }
+      this.game.logicalH = targetH / (targetW / logicalW);
 
       const tCanvas = document.getElementById('title-canvas');
       if (tCanvas) {
-        const tw = Math.round(vw * dpr);
-        const th = Math.round(vh * dpr);
+        const tw = Math.round(window.innerWidth * dpr);
+        const th = Math.round(window.innerHeight * dpr);
         if (tCanvas.width !== tw || tCanvas.height !== th) {
           tCanvas.width = tw;
           tCanvas.height = th;
@@ -169,11 +166,13 @@
     hideTitleScreen() {
       document.getElementById('title-screen').classList.add('hidden');
       document.getElementById('game-stage').classList.remove('hidden');
+      this.resizeCanvas();
     }
 
     showTitleScreen() {
       document.getElementById('title-screen').classList.remove('hidden');
       document.getElementById('game-stage').classList.add('hidden');
+      this.resizeCanvas();
       PalX.audio.playMusic('title');
     }
 
@@ -491,7 +490,7 @@
 
       document.getElementById('btn-hud-audio').addEventListener('click', (ev) => {
         const on = PalX.audio.toggle();
-        ev.currentTarget.textContent = on ? '🎵 仙樂開' : '🔇 仙樂關';
+        ev.currentTarget.innerHTML = `<img src="assets/ui_icons/${on ? 'music' : 'music_off'}.svg" class="hud-inline-icon" alt=""> 仙樂${on ? '開' : '關'}`;
       });
 
       // 360度絲滑虛擬搖桿（支援按住任意方位與連續拖曳走位）
@@ -844,7 +843,7 @@
       // 當前行動角色提示
       const actor = b.party.find((h) => h.id === b.activeActorId);
       const turnEl = document.getElementById('battle-turn-actor');
-      turnEl.textContent = (b.phase === 'input' && actor) ? `▶ ${actor.name} 出招` : '⚔️ 交鋒中…';
+      turnEl.textContent = (b.phase === 'input' && actor) ? `▶ ${actor.name} 出招` : '【交鋒中…】';
 
       // 右下角仙劍1經典人物頭像狀態牌
       const cardsWrap = document.getElementById('battle-hero-cards');
@@ -1011,7 +1010,7 @@
         html += `<p class="vic-highlight">戰利寶物：【${summary.drops.join('】、【')}】</p>`;
       }
       if (summary.lvLogs && summary.lvLogs.length) {
-        html += summary.lvLogs.map((l) => `<p class="vic-lvup">✨ ${l}</p>`).join('');
+        html += summary.lvLogs.map((l) => `<p class="vic-lvup">【修為突破】${l}</p>`).join('');
       }
       body.innerHTML = html;
       el.classList.remove('hidden');
@@ -1100,10 +1099,10 @@
         body.innerHTML = `
           <div class="quests-container">
             <div class="quest-main-box">
-              <h4>📜 當前主線使命</h4>
+              <h4><img src="assets/ui_icons/scroll.svg" class="hud-inline-icon" alt=""> 當前主線使命</h4>
               <p>${mainObjective}</p>
             </div>
-            <h4 style="color: var(--pal-gold); margin-top: 4px;">🧭 九州奇遇錄（十二樁俠義支線）</h4>
+            <h4 style="color: var(--pal-gold); margin-top: 4px;"><img src="assets/ui_icons/compass.svg" class="hud-inline-icon" alt=""> 九州奇遇錄（十二樁俠義支線）</h4>
             <div class="quest-grid">
               ${(PalX.SIDE_QUESTS || []).map((q) => {
                 const isDone = !!f[q.doneFlag];
@@ -1123,9 +1122,9 @@
                       <b>${q.title}</b>
                       ${statusBadge}
                     </div>
-                    <div style="font-size: 0.76rem; color: #80deea; margin-bottom: 3px;">📍 ${q.region} ｜ 委託：${q.giver}</div>
+                    <div style="font-size: 0.76rem; color: #80deea; margin-bottom: 3px;">【界域】${q.region} ｜ 【委託】${q.giver}</div>
                     <div class="quest-desc">${q.desc}</div>
-                    <div class="quest-reward">🎁 酬謝：${q.rewardText}</div>
+                    <div class="quest-reward">【厚禮】${q.rewardText}</div>
                   </div>
                 `;
               }).join('')}
@@ -1141,7 +1140,7 @@
         body.innerHTML = `
           <div class="music-container">
             <div class="quest-main-box">
-              <h4>🎵 仙樂鑑賞 · 九州古韻</h4>
+              <h4><img src="assets/ui_icons/music.svg" class="hud-inline-icon" alt=""> 仙樂鑑賞 · 九州古韻</h4>
               <p>本作品採用 WebAudio 7 聲部民族樂器物理建模合成（竹笛、洞簫、二胡、古箏、琵琶、編鐘玉磬、堂鼓木魚），收錄 16 首原創長篇仙俠樂章。</p>
             </div>
             <div class="music-grid">
@@ -1153,7 +1152,7 @@
                       <b>${t.title || t.name || t.id}</b>
                       <span>${t.subtitle ? (t.subtitle + (t.mood ? " · " + t.mood : "")) : (t.desc || t.id)}</span>
                     </div>
-                    <button class="pal-btn-sm" data-playtrack="${t.id}">${isPlaying ? '▶ 奏響中' : '🎵 試聽'}</button>
+                    <button class="pal-btn-sm" data-playtrack="${t.id}">${isPlaying ? '【奏響中】' : '【試聽】'}</button>
                   </div>
                 `;
               }).join('')}
@@ -1474,9 +1473,9 @@
               <div class="gu-slot ${this.guSlotA ? 'filled' : ''}" id="gu-clear-a"><span>藥引甲</span><b>${nameA}</b></div>
               <div class="gu-plus">＋</div>
               <div class="gu-slot ${this.guSlotB ? 'filled' : ''}" id="gu-clear-b"><span>藥引乙</span><b>${nameB}</b></div>
-              <button class="pal-btn" id="btn-gu-craft" ${(!this.guSlotA || !this.guSlotB) ? 'disabled' : ''}>🔥 開皿煉化</button>
+              <button class="pal-btn" id="btn-gu-craft" ${(!this.guSlotA || !this.guSlotB) ? 'disabled' : ''}>開皿合煉</button>
             </div>
-            <p class="sub-hint">秘方提示：【赤蠍毒砂/無影毒/五毒蠱卵 ＋ 化屍水 ➔ 隱蠱】、【雪蛤蟆 ＋ 試煉果 ➔ 金蠶王】、【止血草 ＋ 鼠兒果 ➔ 行軍丹】</p>
+            <p class="sub-hint">秘方提示：【赤蠍毒砂/無影毒/五毒蠱卵 ＋ 化屍水 → 隱蠱】、【雪蛤蟆 ＋ 試煉果 → 金蠶王】、【止血草 ＋ 鼠兒果 → 行軍丹】</p>
             <div class="gu-cols">
               <div class="card-list">
                 ${materials.map(({ item, count }) => `
@@ -1488,7 +1487,7 @@
               </div>
               <div class="gu-recipes-log">
                 <h4>已領悟丹方紀錄</h4>
-                ${st.discoveredRecipes.length ? st.discoveredRecipes.map((r) => `<p>✨ ${r}</p>`).join('') : '<p class="muted">尚無煉化紀錄，快投入兩種藥材試試！</p>'}
+                ${st.discoveredRecipes.length ? st.discoveredRecipes.map((r) => `<p>【玄方】${r}</p>`).join('') : '<p class="muted">尚無煉化紀錄，快投入兩種藥材試試！</p>'}
               </div>
             </div>
           </div>

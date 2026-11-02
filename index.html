@@ -15,9 +15,9 @@
       <h1 class="title-logo">仙劍<span>X</span>：燼月長歌</h1>
       <p class="title-poem">煙波一棹聽江雨，半枚殘鈴繫舊塵</p>
       <div class="title-actions">
-        <button id="btn-title-new" class="pal-btn-lg">⚔️ 新的故事（初入江湖）</button>
-        <button id="btn-title-load" class="pal-btn-lg">📜 舊夢重溫（讀取卷軸）</button>
-        <button id="btn-title-lore" class="pal-btn-lg secondary">☯️ 九州錄（太初五曜典籍）</button>
+        <button id="btn-title-new" class="pal-btn-lg"><img src="assets/ui_icons/sword.svg" class="pal-btn-icon" alt=""> 新的故事（初入江湖）</button>
+        <button id="btn-title-load" class="pal-btn-lg"><img src="assets/ui_icons/menu.svg" class="pal-btn-icon" alt=""> 舊夢重溫（讀取卷軸）</button>
+        <button id="btn-title-lore" class="pal-btn-lg secondary"><img src="assets/ui_icons/scroll.svg" class="pal-btn-icon" alt=""> 九州錄（太初五曜典籍）</button>
       </div>
       <div class="title-footer">
         操作：8向 WASD／方向鍵、滑鼠點擊或長按拖曳行走（Shift 疾行）｜ 空白鍵／點擊調查翻箱 ｜ 戰鬥快捷鍵 A圍攻 F仙術 D防禦 W投擲 R重複 Q逃跑
@@ -31,14 +31,14 @@
     <header id="top-hud" class="top-hud">
       <div class="hud-left">
         <div id="hud-map-title" class="hud-map-title">第一章·臨安晨鐘 ｜ 臨安渡·忘憂客棧</div>
-        <div class="hud-quest-row">🧭 <span id="hud-quest-text">在客棧內翻找桂花酒</span></div>
+        <div class="hud-quest-row"><img src="assets/ui_icons/compass.svg" class="hud-inline-icon" alt=""> <span id="hud-quest-text">在客棧內翻找桂花酒</span></div>
       </div>
       <div id="hud-party-mini" class="hud-party-mini"></div>
       <div class="hud-right">
-        <span class="hud-gold-box">🪙 <b id="hud-gold">260 文</b></span>
-        <button id="btn-hud-minimap" class="pal-btn-sm" title="切換微縮地圖">🗺️ 地圖</button>
-        <button id="btn-hud-audio" class="pal-btn-sm">🎵 仙樂開</button>
-        <button id="btn-hud-menu" class="pal-btn-sm">📖 選單 [Esc]</button>
+        <span class="hud-gold-box"><img src="assets/ui_icons/coin.svg" class="hud-inline-icon" alt=""> <b id="hud-gold">260 文</b></span>
+        <button id="btn-hud-minimap" class="pal-btn-sm" title="切換微縮地圖"><img src="assets/ui_icons/map.svg" class="hud-inline-icon" alt=""> 輿圖</button>
+        <button id="btn-hud-audio" class="pal-btn-sm"><img src="assets/ui_icons/music.svg" class="hud-inline-icon" alt=""> 仙樂開</button>
+        <button id="btn-hud-menu" class="pal-btn-sm"><img src="assets/ui_icons/bagua.svg" class="hud-inline-icon" alt=""> 萬象 [Esc]</button>
       </div>
     </header>
 
@@ -53,7 +53,7 @@
           <span class="vjoy-tick t-right">▶</span>
           <span class="vjoy-tick t-down">▼</span>
           <span class="vjoy-tick t-left">◀</span>
-          <div id="vjoy-knob" class="vjoy-knob">☯</div>
+          <div id="vjoy-knob" class="vjoy-knob"><img src="assets/ui_icons/bagua.svg" class="vjoy-knob-img" alt=""></div>
         </div>
         <div class="vctrl-actions">
           <button id="btn-vsprint" class="vact-btn sprint" title="切換御風疾行 [Shift]">疾</button>
@@ -73,7 +73,7 @@
         <div id="battle-drawer" class="battle-drawer hidden">
           <div class="bdrawer-header">
             <span id="bdrawer-title">仙術武學</span>
-            <button id="btn-bdrawer-close" class="pal-btn-xs">✕ 關閉</button>
+            <button id="btn-bdrawer-close" class="pal-btn-xs">【關閉】</button>
           </div>
           <div id="bdrawer-list" class="bdrawer-list"></div>
         </div>
@@ -114,7 +114,7 @@
       <!-- 戰勝結算牌 -->
       <div id="victory-modal" class="sub-modal hidden">
         <div class="pal-frame victory-card">
-          <h3>⚔️ 除魔奏凱 ⚔️</h3>
+          <h3><img src="assets/ui_icons/sword.svg" class="title-decor-icon" alt=""> 除魔奏凱 <img src="assets/ui_icons/sword.svg" class="title-decor-icon flip-x" alt=""></h3>
           <div id="victory-body" class="victory-body"></div>
           <button id="btn-victory-ok" class="pal-btn">收劍前行 [Space]</button>
         </div>
@@ -163,7 +163,7 @@
           <button data-menutab="lore">九州錄</button>
           <button data-menutab="system">存檔</button>
         </nav>
-        <button id="btn-menu-close" class="pal-btn-xs">✕ 返回</button>
+        <button id="btn-menu-close" class="pal-btn-xs">【返回】</button>
       </div>
       <div id="menu-body" class="menu-body"></div>
     </div>
@@ -174,7 +174,7 @@
     <div class="pal-frame menu-window">
       <div class="menu-header">
         <h3 id="shop-title">市集商號</h3>
-        <button id="btn-shop-close" class="pal-btn-xs">✕ 告辭</button>
+        <button id="btn-shop-close" class="pal-btn-xs">【告辭】</button>
       </div>
       <div id="shop-body" class="menu-body"></div>
     </div>

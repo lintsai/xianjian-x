@@ -72,6 +72,9 @@ button:disabled {
 }
 
 .pal-btn-lg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 260px;
   padding: 12px 24px;
   font-size: 1.08rem;
@@ -97,6 +100,9 @@ button:disabled {
 }
 
 .pal-btn, .pal-btn-sm, .pal-btn-xs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--pal-text);
   background: linear-gradient(180deg, #223f70 0%, #122444 100%);
   border: 1.5px solid var(--pal-gold);
@@ -114,6 +120,48 @@ button:disabled {
 .pal-btn-sm:hover:not(:disabled),
 .pal-btn-xs:hover:not(:disabled) {
   filter: brightness(1.22);
+}
+
+/* 古風仙俠 SVG 向量精緻圖標 */
+.hud-inline-icon {
+  width: 15px;
+  height: 15px;
+  vertical-align: -2.5px;
+  margin-right: 4px;
+  display: inline-block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.pal-btn-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+  margin-right: 6px;
+  display: inline-block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.title-decor-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: -4px;
+  margin: 0 6px;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.flip-x {
+  transform: scaleX(-1);
+}
+
+.vjoy-knob-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6));
 }
 
 /* ================= 標題首頁 ================= */
@@ -224,6 +272,8 @@ button:disabled {
 }
 
 .hud-quest-row {
+  display: flex;
+  align-items: center;
   font-size: 0.82rem;
   color: #d7e6f7;
   margin-top: 2px;
@@ -289,6 +339,8 @@ button:disabled {
 }
 
 .hud-gold-box {
+  display: inline-flex;
+  align-items: center;
   font-size: 0.88rem;
   color: #ffe082;
   background: rgba(0, 0, 0, 0.38);

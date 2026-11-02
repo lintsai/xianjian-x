@@ -390,13 +390,14 @@
   }
 
   function drawRoundedTag(ctx, cx, bottomY, text, bgFill, borderStroke, textColor) {
-    ctx.font = 'bold 11px "Microsoft JhengHei", serif';
+    ctx.font = '11px "Microsoft JhengHei", "PingFang TC", sans-serif';
     ctx.textAlign = 'center';
-    const tw = ctx.measureText(text).width + 13;
-    const th = 17;
+    ctx.textBaseline = 'middle';
+    const tw = ctx.measureText(text).width + 12;
+    const th = 16;
     const rx = cx - tw / 2;
-    const ry = bottomY - 13;
-    const r = 4;
+    const ry = bottomY - 14;
+    const r = 3;
 
     ctx.beginPath();
     ctx.moveTo(rx + r, ry);
@@ -413,10 +414,10 @@
     ctx.fillStyle = bgFill;
     ctx.fill();
     ctx.strokeStyle = borderStroke;
-    ctx.lineWidth = 1.1;
+    ctx.lineWidth = 1;
     ctx.stroke();
     ctx.fillStyle = textColor;
-    ctx.fillText(text, cx, bottomY);
+    ctx.fillText(text, cx, ry + th / 2);
   }
 
   // NPC 頭頂氣泡短語（賦予城鎮鮮活生命力）
@@ -477,11 +478,13 @@
       bob = -Math.abs(Math.sin(time * 7.5)) * 1.5;
     } else if (isCollapse) {
       bob = Math.sin(time * 2.2) * 0.4;
+    } else if (opts.moving) {
+      // 物理步伐落地微重力下壓（0 ~ 0.8px，模擬踏步足底著地承重，絕無平移飄移）
+      bob = Math.sin(phase) > 0 ? 0 : 0.8;
     } else {
-      // 站立與行走：足底完全緊貼地面絕不懸空浮起！由多影格步態自然呈現位移
       bob = 0;
     }
-    const sway = opts.moving ? Math.sin(phase) * 0.02 : (isWork ? Math.sin(time * 7.5) * 0.04 : 0);
+    const sway = isWork ? Math.sin(time * 7.5) * 0.04 : 0;
 
     ctx.save();
     ctx.translate(x, y);
@@ -501,7 +504,7 @@
 
     // 1. 足底鞋底接地接觸暗核 (Contact Occlusion Shadow) —— 緊貼鞋底接觸線，徹底消除懸空
     if (!isFloat) {
-      ctx.fillStyle = isCollapse ? 'rgba(8, 6, 4, 0.58)' : 'rgba(10, 8, 6, 0.74)';
+      ctx.fillStyle = isCollapse ? 'rgba(8, 6, 4, 0.58)' : 'rgba(10, 8, 6, 0.78)';
       ctx.beginPath();
       ctx.ellipse(0, 0.5 * scale, 9.5 * scale, 3.2 * scale, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -517,14 +520,6 @@
     ctx.beginPath();
     ctx.ellipse(0, 0.8 * scale, (shadowR + 1) * scale, (shadowR * 0.44) * scale, 0, 0, Math.PI * 2);
     ctx.fill();
-
-    if (opts.isLeader && !opts.battle) {
-      ctx.strokeStyle = 'rgba(128, 222, 234, 0.45)';
-      ctx.lineWidth = 1.3;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 13.5, 6, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
 
     if (opts.tiangang) {
       ctx.strokeStyle = '#ffd54f';
@@ -873,11 +868,11 @@
       labelY = -86;
     }
 
-    // 頭頂圓角古風名牌 + 服務徽章 + 任務驚嘆號／問號 + 氣泡短語
+    // 頭頂圓角古風名牌 + 服務徽章 + 任務標記 + 氣泡短語
     if (obj.type === 'npc' || obj.type === 'boss' || obj.type === 'portal') {
       const badge = obj.serviceBadge ? `[${obj.serviceBadge}] ` : '';
       const prefix = highlighted
-        ? (obj.type === 'boss' ? '⚔️ ' : obj.type === 'portal' ? '🌀 ' : '💬 ')
+        ? (obj.type === 'boss' ? '【伏魔】' : obj.type === 'portal' ? '【渡口】' : '【會客】')
         : badge;
       const borderCol = highlighted
         ? '#ffe082'
@@ -885,11 +880,11 @@
       const txtCol = obj.type === 'boss' ? '#ff8a80' : obj.type === 'portal' ? '#80deea' : '#ffe082';
       drawRoundedTag(ctx, 0, labelY, prefix + obj.name, 'rgba(7, 15, 32, 0.88)', borderCol, txtCol);
 
-      // 任務標記 (! 主線 / ✓ 可回報支線 / ? 可接支線)
+      // 任務標記 (! 主線 / 准 可回報支線 / ? 可接支線)
       if (obj.questMarker) {
         const qy = labelY - 19 + Math.sin(time * 6) * 2.2;
         const isMain = obj.questMarker === '!';
-        const isTurnIn = obj.questMarker === '✓';
+        const isTurnIn = obj.questMarker === '✓' || obj.questMarker === '准';
         const qBg = isMain ? '#ffb300' : (isTurnIn ? '#69f0ae' : '#4fc3f7');
         ctx.fillStyle = qBg;
         ctx.beginPath();
@@ -898,10 +893,11 @@
         ctx.strokeStyle = '#081224';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-        ctx.font = 'bold 12px "Microsoft JhengHei", sans-serif';
+        ctx.font = 'bold 11px "Microsoft JhengHei", sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#081224';
-        ctx.fillText(obj.questMarker, 0, qy);
+        const markerText = isTurnIn ? '准' : (isMain ? '令' : '託');
+        ctx.fillText(markerText, 0, qy);
       }
 
       // 浮動生活氣泡短語
@@ -910,7 +906,7 @@
         drawSpeechBubble(ctx, 0, barkTop, obj.activeBark, obj.barkAlpha || 1);
       }
     } else if (highlighted) {
-      const hintLabel = opened ? `${obj.name}（已查）` : `✨ ${obj.name}`;
+      const hintLabel = opened ? `【已查】${obj.name}` : `【探查】${obj.name}`;
       drawRoundedTag(ctx, 0, labelY + Math.sin(time * 6) * 1.5, hintLabel, 'rgba(12, 26, 52, 0.92)', '#ffe082', '#fff8e1');
     }
 
@@ -946,7 +942,7 @@
     ctx.font = 'bold 10px "Microsoft JhengHei", sans-serif';
     ctx.fillStyle = '#ffe082';
     ctx.textAlign = 'left';
-    ctx.fillText(`🗺️ ${map.name.split('·')[0]}`, mx + 6, my + 13);
+    ctx.fillText(`【坤輿】${map.name.split('·')[0]}`, mx + 6, my + 13);
 
     const ox = mx + 6;
     const oy = my + 18;
@@ -1017,20 +1013,19 @@
   // 45度斜視角地圖完整渲染
   // =========================================================================
   function renderMapScene(ctx, canvas, game) {
-    const logicalW = game.logicalW || 840;
-    const logicalH = game.logicalH || 480;
-    const scaleX = canvas.width / logicalW;
-    const scaleY = canvas.height / logicalH;
+    const logicalW = game.logicalW || 880;
+    const uniformScale = canvas.width / logicalW;
 
     ctx.save();
-    if (scaleX !== 1 || scaleY !== 1) {
-      ctx.scale(scaleX, scaleY);
+    if (uniformScale !== 1) {
+      ctx.scale(uniformScale, uniformScale);
     }
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
     const w = logicalW;
-    const h = logicalH;
+    const h = canvas.height / uniformScale;
+    game.logicalH = h;
     const map = PalX.MAPS[game.state.mapId];
     if (!map) {
       ctx.restore();
@@ -1529,20 +1524,19 @@
   }
 
   function renderBattleScene(ctx, canvas, battle, mapTheme, time) {
-    const logicalW = (battle.game && battle.game.logicalW) || 840;
-    const logicalH = (battle.game && battle.game.logicalH) || 480;
-    const scaleX = canvas.width / logicalW;
-    const scaleY = canvas.height / logicalH;
+    const logicalW = (battle.game && battle.game.logicalW) || 880;
+    const uniformScale = canvas.width / logicalW;
 
     ctx.save();
-    if (scaleX !== 1 || scaleY !== 1) {
-      ctx.scale(scaleX, scaleY);
+    if (uniformScale !== 1) {
+      ctx.scale(uniformScale, uniformScale);
     }
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
     const w = logicalW;
-    const h = logicalH;
+    const h = canvas.height / uniformScale;
+    if (battle.game) battle.game.logicalH = h;
     const isPortrait = w < h * 0.92;
     const unitScale = isPortrait ? 1.12 : 1.36;
     const pal = THEME_PALETTES[mapTheme] || THEME_PALETTES.lotus_island;
