@@ -273,19 +273,19 @@
 
   // 各裝飾物件標準繪製高度與錨點偏移
   const DECOR_SPECS = {
-    paifang: { h: 108, yOff: 14, shadowR: 28, zBias: 0.34 },
-    pavilion: { h: 112, yOff: 16, shadowR: 32, zBias: 0.22 },
-    market_stall: { h: 74, yOff: 12, shadowR: 24, zBias: 0.18 },
-    lantern_post: { h: 72, yOff: 6, shadowR: 11, zBias: 0.16 },
-    incense_burner: { h: 50, yOff: 7, shadowR: 16, zBias: 0.16 },
-    well_stone: { h: 60, yOff: 9, shadowR: 19, zBias: 0.16 },
-    inn_table: { h: 36, yOff: 8, shadowR: 18, zBias: 0.14 },
-    rock_garden: { h: 56, yOff: 7, shadowR: 18, zBias: 0.15 },
-    flower_bush: { h: 30, yOff: 6, shadowR: 15, zBias: 0.08 },
-    stone_stele: { h: 66, yOff: 7, shadowR: 16, zBias: 0.16 },
-    alch_cauldron: { h: 58, yOff: 7, shadowR: 17, zBias: 0.16 },
-    weapon_rack: { h: 52, yOff: 7, shadowR: 17, zBias: 0.15 },
-    crystal_pillar: { h: 66, yOff: 7, shadowR: 16, zBias: 0.16 }
+    paifang: { h: 104, yOff: 0, shadowR: 32, zBias: 0.34 },
+    pavilion: { h: 116, yOff: 0, shadowR: 34, zBias: 0.22 },
+    market_stall: { h: 68, yOff: 0, shadowR: 24, zBias: 0.18 },
+    lantern_post: { h: 72, yOff: 0, shadowR: 10, zBias: 0.16 },
+    incense_burner: { h: 42, yOff: 0, shadowR: 14, zBias: 0.16 },
+    well_stone: { h: 52, yOff: 0, shadowR: 18, zBias: 0.16 },
+    inn_table: { h: 32, yOff: 0, shadowR: 18, zBias: 0.14 },
+    rock_garden: { h: 48, yOff: 0, shadowR: 18, zBias: 0.15 },
+    flower_bush: { h: 26, yOff: 0, shadowR: 14, zBias: 0.08 },
+    stone_stele: { h: 56, yOff: 0, shadowR: 16, zBias: 0.16 },
+    alch_cauldron: { h: 52, yOff: 0, shadowR: 16, zBias: 0.16 },
+    weapon_rack: { h: 48, yOff: 0, shadowR: 16, zBias: 0.15 },
+    crystal_pillar: { h: 62, yOff: 0, shadowR: 15, zBias: 0.16 }
   };
 
   function tileToScreen(gx, gy, camX, camY, canvasW, canvasH) {
@@ -500,21 +500,22 @@
       ctx.stroke();
     }
 
-    // 腳下柔和落地陰影
-    const shadowR = opts.battle ? 23 : (isCollapse ? 22 : 15.5);
-    const shadowGrad = ctx.createRadialGradient(0, 4, 2, 0, 4, shadowR * scale);
-    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.48)');
+    // 腳下柔和沉穩落地陰影（緊貼足部接觸面）
+    const shadowR = opts.battle ? 23 : (isCollapse ? 20 : 13.5);
+    const shadowGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, shadowR * scale);
+    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.62)');
+    shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.38)');
     shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = shadowGrad;
     ctx.beginPath();
-    ctx.ellipse(0, 4, (shadowR + 2) * scale, (shadowR * 0.46) * scale, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, (shadowR + 1) * scale, (shadowR * 0.44) * scale, 0, 0, Math.PI * 2);
     ctx.fill();
 
     if (opts.isLeader && !opts.battle) {
-      ctx.strokeStyle = 'rgba(128, 222, 234, 0.38)';
+      ctx.strokeStyle = 'rgba(128, 222, 234, 0.45)';
       ctx.lineWidth = 1.3;
       ctx.beginPath();
-      ctx.ellipse(0, 3.5, 14, 6.2, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 13.5, 6, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -522,7 +523,7 @@
       ctx.strokeStyle = '#ffd54f';
       ctx.lineWidth = 2.4;
       ctx.beginPath();
-      ctx.ellipse(0, 3, (shadowR + 6 + Math.sin(time * 8) * 2.5) * scale, (shadowR * 0.55) * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, (shadowR + 6 + Math.sin(time * 8) * 2.5) * scale, (shadowR * 0.55) * scale, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -547,7 +548,7 @@
       ctx.translate(-6, 2);
       ctx.rotate(-Math.PI / 2.25);
     } else if (opts.kneel) {
-      ctx.translate(0, 6);
+      ctx.translate(0, 4);
       ctx.rotate(0.09);
     } else if (sway) {
       ctx.rotate(sway);
@@ -556,15 +557,15 @@
     if (img) {
       const baseH = opts.battle
         ? 84
-        : (spriteId === 'child_boy' || spriteId === 'fox' ? 47 : 59);
+        : (spriteId === 'child_boy' ? 38 : (spriteId === 'fox' ? 34 : 48));
       const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
       const drawH = baseH;
       const drawW = drawH * aspect;
-      ctx.drawImage(img, -drawW / 2, -drawH + 5 + bob, drawW, drawH);
+      ctx.drawImage(img, -drawW / 2, -drawH + bob, drawW, drawH);
     } else {
       ctx.fillStyle = '#3b6ea5';
       ctx.beginPath();
-      ctx.ellipse(0, -22 + bob, 11, 22, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, -20 + bob, 10, 20, 0, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -618,18 +619,18 @@
       ctx.filter = 'brightness(2.3) contrast(1.15)';
     }
 
-    const sRx = (isBoss ? 34 : 20) * scale;
-    const sRy = (isBoss ? 13 : 8) * scale;
-    ctx.fillStyle = isBoss ? 'rgba(18, 6, 32, 0.52)' : 'rgba(0, 0, 0, 0.42)';
+    const sRx = (isBoss ? 32 : 18) * scale;
+    const sRy = (isBoss ? 12 : 7.5) * scale;
+    ctx.fillStyle = isBoss ? 'rgba(18, 6, 32, 0.58)' : 'rgba(0, 0, 0, 0.48)';
     ctx.beginPath();
-    ctx.ellipse(0, 5, sRx, sRy, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, sRx, sRy, 0, 0, Math.PI * 2);
     ctx.fill();
 
     if (isBoss) {
-      ctx.strokeStyle = 'rgba(255, 112, 67, 0.35)';
+      ctx.strokeStyle = 'rgba(255, 112, 67, 0.38)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(0, 5, sRx + 4 + Math.sin(time * 5) * 3, sRy + 2, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, sRx + 4 + Math.sin(time * 5) * 3, sRy + 2, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -637,15 +638,15 @@
     const img = getAsset(assetPath) || getAsset('monsters/plant.png');
 
     if (img) {
-      let baseH = 74;
-      if (spriteId === 'boss_shuimoshou') baseH = 128;
-      else if (spriteId === 'boss_yueling') baseH = 88;
-      else if (isBoss) baseH = 110;
+      let baseH = 72;
+      if (spriteId === 'boss_shuimoshou') baseH = 126;
+      else if (spriteId === 'boss_yueling') baseH = 86;
+      else if (isBoss) baseH = 104;
 
       const drawH = baseH * scale;
       const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
       const drawW = drawH * aspect;
-      ctx.drawImage(img, -drawW / 2, -drawH + 7 + hover, drawW, drawH);
+      ctx.drawImage(img, -drawW / 2, -drawH + (isFloating ? hover - 3 : hover), drawW, drawH);
     } else {
       ctx.fillStyle = isBoss ? '#8e24aa' : '#43a047';
       ctx.beginPath();
@@ -669,12 +670,12 @@
 
     // 裝飾性建築與景觀道具 (牌坊、涼亭、市集攤位、街燈、香爐、丹爐、石井等)
     if (obj.type === 'decor') {
-      const spec = DECOR_SPECS[obj.sprite] || { h: 54, yOff: 7, shadowR: 16 };
+      const spec = DECOR_SPECS[obj.sprite] || { h: 54, yOff: 0, shadowR: 16 };
       const img = getAsset(`props/${obj.sprite}.png`);
       if (obj.sprite !== 'paifang' && obj.sprite !== 'flower_bush') {
-        ctx.fillStyle = 'rgba(0,0,0,0.32)';
+        ctx.fillStyle = 'rgba(0,0,0,0.38)';
         ctx.beginPath();
-        ctx.ellipse(0, 3, spec.shadowR, spec.shadowR * 0.44, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, spec.shadowR, spec.shadowR * 0.44, 0, 0, Math.PI * 2);
         ctx.fill();
       }
       if (img) {
@@ -698,57 +699,57 @@
     }
 
     if (highlighted) {
-      const hr = (obj.type === 'boss' ? 30 : 21) + Math.sin(time * 7) * 2.2;
+      const hr = (obj.type === 'boss' ? 28 : 18.5) + Math.sin(time * 7) * 2;
       ctx.strokeStyle = obj.type === 'boss' ? '#ff8a80' : '#ffe082';
       ctx.lineWidth = 2.2;
       ctx.beginPath();
-      ctx.ellipse(0, 3, hr, hr * 0.45, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, hr, hr * 0.44, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
-    let labelY = -56;
+    let labelY = -52;
 
     if (obj.type === 'chest') {
       const img = getAsset(opened ? 'props/chest_open.png' : 'props/chest_closed.png');
-      ctx.fillStyle = 'rgba(0,0,0,0.36)';
+      ctx.fillStyle = 'rgba(0,0,0,0.42)';
       ctx.beginPath();
-      ctx.ellipse(0, 3, 16, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 15, 6.5, 0, 0, Math.PI * 2);
       ctx.fill();
       if (img) {
-        const dh = 39;
+        const dh = 28;
         const dw = dh * (img.naturalWidth / Math.max(1, img.naturalHeight));
-        ctx.drawImage(img, -dw / 2, -dh + 6, dw, dh);
+        ctx.drawImage(img, -dw / 2, -dh, dw, dh);
       }
       if (!opened) {
         ctx.fillStyle = `rgba(255, 238, 145, ${0.52 + Math.sin(time * 5.2) * 0.3})`;
         ctx.beginPath();
-        ctx.arc(0, -19 + Math.sin(time * 4) * 2, 3.2, 0, Math.PI * 2);
+        ctx.arc(0, -15 + Math.sin(time * 4) * 2, 3, 0, Math.PI * 2);
         ctx.fill();
       }
-      labelY = -38;
+      labelY = -34;
     } else if (obj.type === 'jar' || obj.type === 'barrel') {
       const img = getAsset(obj.type === 'jar' ? 'props/jar.png' : 'props/barrel.png');
-      ctx.fillStyle = 'rgba(0,0,0,0.34)';
+      ctx.fillStyle = 'rgba(0,0,0,0.40)';
       ctx.beginPath();
-      ctx.ellipse(0, 3, 13, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 12, 5.5, 0, 0, Math.PI * 2);
       ctx.fill();
       if (img) {
-        const dh = 37;
+        const dh = obj.type === 'jar' ? 26 : 28;
         const dw = dh * (img.naturalWidth / Math.max(1, img.naturalHeight));
         if (opened) ctx.globalAlpha *= 0.72;
-        ctx.drawImage(img, -dw / 2, -dh + 5, dw, dh);
+        ctx.drawImage(img, -dw / 2, -dh, dw, dh);
       }
-      labelY = -36;
+      labelY = -32;
     } else if (obj.type === 'stone_stele') {
       const img = getAsset('props/stone_stele.png');
-      ctx.fillStyle = 'rgba(0,0,0,0.36)';
+      ctx.fillStyle = 'rgba(0,0,0,0.42)';
       ctx.beginPath();
-      ctx.ellipse(0, 3, 16, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 16, 7, 0, 0, Math.PI * 2);
       ctx.fill();
       if (img) {
-        const dh = 64;
+        const dh = 56;
         const dw = dh * (img.naturalWidth / Math.max(1, img.naturalHeight));
-        ctx.drawImage(img, -dw / 2, -dh + 7, dw, dh);
+        ctx.drawImage(img, -dw / 2, -dh, dw, dh);
       }
       labelY = -62;
     } else if (obj.type === 'statue') {
@@ -760,16 +761,16 @@
         ctx.globalAlpha *= 0.6 + Math.sin(time * 4) * 0.22;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.ellipse(0, 3, 20, 9, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 19, 8.5, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
       if (img) {
-        const dh = broken ? 38 : 57;
+        const dh = broken ? 34 : 54;
         const dw = dh * (img.naturalWidth / Math.max(1, img.naturalHeight));
-        ctx.drawImage(img, -dw / 2, -dh + 6, dw, dh);
+        ctx.drawImage(img, -dw / 2, -dh, dw, dh);
       }
-      labelY = broken ? -42 : -60;
+      labelY = broken ? -40 : -60;
     } else if (obj.type === 'switch') {
       const active = (obj.flag && flags[obj.flag]) ||
         (obj.interaction === 'snake_switch' && flags.snake_gate_open) ||
@@ -777,7 +778,7 @@
         (obj.interaction === 'tower_switch_yang' && flags.tower_yang);
       const img = getAsset(active ? 'props/switch_active.png' : 'props/switch.png');
       if (img) {
-        const dw = 54;
+        const dw = 52;
         const dh = dw * (img.naturalHeight / Math.max(1, img.naturalWidth));
         ctx.drawImage(img, -dw / 2, -dh * 0.62, dw, dh);
       }
@@ -791,7 +792,7 @@
         const img = getAsset('props/boat.png');
         const bob = Math.sin(time * 2.8) * 2.2;
         if (img) {
-          const dw = 74;
+          const dw = 72;
           const dh = dw * (img.naturalHeight / Math.max(1, img.naturalWidth));
           ctx.drawImage(img, -dw / 2, -dh * 0.65 + bob, dw, dh);
         }
@@ -799,7 +800,7 @@
       } else {
         const img = getAsset('props/portal.png');
         if (img) {
-          const dw = 58;
+          const dw = 56;
           const dh = dw * (img.naturalHeight / Math.max(1, img.naturalWidth));
           ctx.save();
           ctx.globalAlpha *= 0.88 + Math.sin(time * 4) * 0.12;
@@ -823,10 +824,10 @@
         flipX: !!obj.runtimeFacingLeft,
         pose
       });
-      labelY = pose === 'kneel' ? -24 : (obj.sprite === 'child_boy' || obj.sprite === 'fox' ? -50 : -61);
+      labelY = pose === 'kneel' ? -24 : (obj.sprite === 'child_boy' || obj.sprite === 'fox' ? -42 : -52);
     } else if (obj.type === 'boss') {
       drawMonsterSprite(ctx, 0, 0, obj.sprite || 'boss_chigui', time, { scale: 0.78, isBoss: true });
-      labelY = -90;
+      labelY = -86;
     }
 
     // 頭頂圓角古風名牌 + 服務徽章 + 任務驚嘆號／問號 + 氣泡短語
@@ -1304,8 +1305,8 @@
           if (occludingPlayer) ctx.globalAlpha = 0.42;
           const dw = 68;
           const dh = ent.isCourtyard
-            ? 56
-            : Math.min(62, dw * (wImg.naturalHeight / Math.max(1, wImg.naturalWidth)) * 0.82);
+            ? 72
+            : 80;
           ctx.drawImage(wImg, pt.x - dw / 2, pt.y + TILE_H / 2 - dh, dw, dh);
           ctx.restore();
         } else {

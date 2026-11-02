@@ -39,11 +39,12 @@
       const vh = viewport.clientHeight || window.innerHeight;
       if (vw <= 0 || vh <= 0) return;
 
-      let logicalW = 960;
+      // 經典仙劍 2.5D 黃金鏡頭比例：適度拉近視角，人物與精緻場景主體突出，杜絕遠景螻蟻感
+      let logicalW = 840;
       if (vw < 640 || vh > vw) {
-        logicalW = Math.max(480, Math.min(640, Math.round(vw * 1.25)));
+        logicalW = Math.max(400, Math.min(540, Math.round(vw * 1.12)));
       } else if (vw > 1200) {
-        logicalW = 1080;
+        logicalW = 880;
       }
       const logicalH = Math.max(360, Math.round(logicalW * (vh / vw)));
       if (canvas.width !== logicalW || canvas.height !== logicalH) {
