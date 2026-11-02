@@ -26,6 +26,30 @@
       this.bindBattleEvents();
       this.bindMenuEvents();
       this.startTitleBackdropLoop();
+      this.resizeCanvas();
+      window.addEventListener('resize', () => this.resizeCanvas());
+      window.addEventListener('orientationchange', () => setTimeout(() => this.resizeCanvas(), 80));
+    }
+
+    resizeCanvas() {
+      const viewport = document.querySelector('.canvas-viewport');
+      const canvas = this.game.canvas;
+      if (!viewport || !canvas) return;
+      const vw = viewport.clientWidth || window.innerWidth;
+      const vh = viewport.clientHeight || window.innerHeight;
+      if (vw <= 0 || vh <= 0) return;
+
+      let logicalW = 960;
+      if (vw < 640 || vh > vw) {
+        logicalW = Math.max(480, Math.min(640, Math.round(vw * 1.25)));
+      } else if (vw > 1200) {
+        logicalW = 1080;
+      }
+      const logicalH = Math.max(360, Math.round(logicalW * (vh / vw)));
+      if (canvas.width !== logicalW || canvas.height !== logicalH) {
+        canvas.width = logicalW;
+        canvas.height = logicalH;
+      }
     }
 
     // =========================================================================
@@ -208,6 +232,15 @@
 
     handleCanvasTap(sx, sy) {
       const canvas = this.game.canvas;
+      if (this.game.showMiniMap && this.game.miniMapRect) {
+        const mm = this.game.miniMapRect;
+        if (sx >= mm.x && sx <= mm.x + mm.w && sy >= mm.y && sy <= mm.y + mm.h) {
+          this.game.showMiniMap = !this.game.showMiniMap;
+          PalX.audio.sfx('cursor');
+          this.toast(this.game.showMiniMap ? '小地圖已開啟' : '小地圖已收起');
+          return;
+        }
+      }
       if (this.game.battle.active) {
         // 戰鬥中點擊敵人切換鎖定目標（擴大首領立繪命中範圍）
         const b = this.game.battle;
@@ -404,7 +437,25 @@
         this.game.keysDown[ev.code] = false;
       });
 
-      // 頂部工具列按鈕
+      // 頂部工具列小地圖與選單按鈕
+      const btnMinimap = document.getElementById('btn-hud-minimap');
+      if (btnMinimap) {
+        btnMinimap.addEventListener('click', () => {
+          PalX.audio.sfx('cursor');
+          this.game.showMiniMap = !this.game.showMiniMap;
+          this.toast(this.game.showMiniMap ? '小地圖已開啟' : '小地圖已收起');
+        });
+      }
+
+      const btnVmap = document.getElementById('btn-vmap');
+      if (btnVmap) {
+        btnVmap.addEventListener('click', () => {
+          PalX.audio.sfx('cursor');
+          this.game.showMiniMap = !this.game.showMiniMap;
+          this.toast(this.game.showMiniMap ? '小地圖已開啟' : '小地圖已收起');
+        });
+      }
+
       document.getElementById('btn-hud-menu').addEventListener('click', () => {
         PalX.audio.sfx('cursor');
         this.openMenuModal('status');
@@ -939,7 +990,7 @@
     }
 
     // =========================================================================
-    // 仙劍1經典系統大選單 (狀態 / 仙術 / 物品 / 煉蠱 / 裝備 / 六界九泉錄 / 系統)
+    // 仙劍1經典系統大選單 (狀態 / 仙術 / 物品 / 煉蠱 / 裝備 / 九州錄 / 系統)
     // =========================================================================
     bindMenuEvents() {
       document.getElementById('btn-menu-close').addEventListener('click', () => this.closeModal());
@@ -957,6 +1008,8 @@
     openMenuModal(tab, fromTitle) {
       this.fromTitleModal = !!fromTitle;
       this.game.modalActive = true;
+      const vc = document.getElementById('virtual-controls');
+      if (vc) vc.classList.add('hidden');
       this.selectedMenuTab = tab || 'status';
       if (this.game.state && !this.game.state.unlockedHeroes.includes(this.selectedHeroId)) {
         this.selectedHeroId = this.game.state.activeParty[0] || 'luxiao';
@@ -970,6 +1023,10 @@
       this.game.interactCooldown = 0.35;
       document.getElementById('menu-modal').classList.add('hidden');
       document.getElementById('shop-modal').classList.add('hidden');
+      if (!this.game.battle.active && !this.game.dialogueActive) {
+        const vc = document.getElementById('virtual-controls');
+        if (vc) vc.classList.remove('hidden');
+      }
       if (this.game.state) this.updateTopHud();
     }
 
@@ -1008,7 +1065,84 @@
 
       const body = document.getElementById('menu-body');
 
-      // 1. 六界九泉錄 (隨時可從標題或遊戲內閱覽!)
+      // 任務卷軸 (主線使命與 12 樁支線任務即時追蹤)
+      if (this.selectedMenuTab === 'quests') {
+        const f = (this.game.state && this.game.state.flags) || {};
+        const mainObjective = PalX.getQuestObjective ? PalX.getQuestObjective(f) : '尋訪江湖大道';
+        body.innerHTML = `
+          <div class="quests-container">
+            <div class="quest-main-box">
+              <h4>📜 當前主線使命</h4>
+              <p>${mainObjective}</p>
+            </div>
+            <h4 style="color: var(--pal-gold); margin-top: 4px;">🧭 九州奇遇錄（十二樁俠義支線）</h4>
+            <div class="quest-grid">
+              ${(PalX.SIDE_QUESTS || []).map((q) => {
+                const isDone = !!f[q.doneFlag];
+                const isProg = !!f[q.startFlag] && !isDone;
+                const canTurnIn = isProg && ((q.readyItem && this.game.getItemCount(q.readyItem) > 0) || (q.readyFlag && !!f[q.readyFlag]));
+                const statusBadge = isDone
+                  ? `<span class="quest-badge done">已結義</span>`
+                  : canTurnIn
+                  ? `<span class="quest-badge ready">可交付</span>`
+                  : isProg
+                  ? `<span class="quest-badge prog">進行中</span>`
+                  : `<span class="quest-badge unseen">未觸發</span>`;
+                const cardClass = isDone ? 'done' : canTurnIn ? 'ready' : '';
+                return `
+                  <div class="quest-card ${cardClass}">
+                    <div class="quest-card-head">
+                      <b>${q.title}</b>
+                      ${statusBadge}
+                    </div>
+                    <div style="font-size: 0.76rem; color: #80deea; margin-bottom: 3px;">📍 ${q.region} ｜ 委託：${q.giver}</div>
+                    <div class="quest-desc">${q.desc}</div>
+                    <div class="quest-reward">🎁 酬謝：${q.rewardText}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 仙樂鑑賞 (16 首原創古風樂章試聽)
+      if (this.selectedMenuTab === 'music') {
+        const curTrack = PalX.audio && PalX.audio.currentTrack;
+        body.innerHTML = `
+          <div class="music-container">
+            <div class="quest-main-box">
+              <h4>🎵 仙樂鑑賞 · 九州古韻</h4>
+              <p>本作品採用 WebAudio 7 聲部民族樂器物理建模合成（竹笛、洞簫、二胡、古箏、琵琶、編鐘玉磬、堂鼓木魚），收錄 16 首原創長篇仙俠樂章。</p>
+            </div>
+            <div class="music-grid">
+              ${(PalX.TRACK_LIST || []).map((t) => {
+                const isPlaying = curTrack === t.id;
+                return `
+                  <div class="music-card ${isPlaying ? 'playing' : ''}">
+                    <div class="music-card-info">
+                      <b>${t.title || t.name || t.id}</b>
+                      <span>${t.subtitle ? (t.subtitle + (t.mood ? " · " + t.mood : "")) : (t.desc || t.id)}</span>
+                    </div>
+                    <button class="pal-btn-sm" data-playtrack="${t.id}">${isPlaying ? '▶ 奏響中' : '🎵 試聽'}</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        body.querySelectorAll('[data-playtrack]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const tid = btn.getAttribute('data-playtrack');
+            PalX.audio.playMusic(tid);
+            this.renderMenuModal();
+          });
+        });
+        return;
+      }
+
+      // 1. 九州錄 (隨時可從標題或遊戲內閱覽!)
       if (this.selectedMenuTab === 'lore') {
         body.innerHTML = `<div class="lore-container">` + PalX.LORE_CODEX.categories.map((cat) => `
           <div class="lore-section">
@@ -1289,11 +1423,11 @@
         return;
       }
 
-      // 7. 煉蠱皿合成系統
+      // 7. 百草丹鼎合煉系統
       if (this.selectedMenuTab === 'gu') {
         const unlocked = this.game.hasItemOrEquipped('liangumin') || st.flags.aman_joined;
         if (!unlocked) {
-          body.innerHTML = `<div class="empty-tip">尚未獲得苗疆秘寶【煉蠱皿】。<br>推進劇情至第四章【南詔白苗聖姑谷】，白苗少主藍阿蠻入隊時即會贈予！</div>`;
+          body.innerHTML = `<div class="empty-tip">尚未獲得苗疆秘寶【煉蠱皿】。<br>推進劇情至第四章【南詔白苗聖姑谷】，白苗少主雲珞入隊時即會贈予！</div>`;
           return;
         }
         const materials = Object.keys(st.inventory)

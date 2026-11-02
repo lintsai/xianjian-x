@@ -194,9 +194,11 @@
 
       this.isBoss = this.enemies.some((e) => e.isBoss);
       this.selectedEnemyIdx = 0;
-      PalX.audio.playMusic(this.isBoss ? 'boss' : 'battle');
+      const isFinalTier = enemyIds.includes('boss_shuimoshou') || enemyIds.includes('boss_swordspirit');
+      const bgmKey = opts.music || (isFinalTier ? 'final_boss' : this.isBoss ? 'duel_boss' : 'battle');
+      PalX.audio.playMusic(bgmKey);
 
-      this.pushLog(this.isBoss ? `強敵【${this.enemies.map((e) => e.name).join('、')}】現身！` : '妖魔攔路，拔劍迎敵！');
+      this.pushLog(this.isBoss ? `強敵【${this.enemies.map((e) => e.name).join('、')}】現身！` : '妖邪攔路，拔劍迎敵！');
       this.buildNextRoundQueue();
       this.advanceTurn();
     }
@@ -210,8 +212,8 @@
     }
 
     addPopup(targetIsEnemy, idx, text, color, big) {
-      const canvasW = 960;
-      const canvasH = 580;
+      const canvasW = (this.game && this.game.canvas && this.game.canvas.width) || 960;
+      const canvasH = (this.game && this.game.canvas && this.game.canvas.height) || 580;
       const pos = targetIsEnemy
         ? PalX.graphics.getEnemyBattlePos(idx, this.enemies.length, canvasW, canvasH)
         : PalX.graphics.getHeroBattlePos(idx, this.party.length, canvasW, canvasH);
@@ -228,8 +230,8 @@
     }
 
     addVfx(kind, targetIsEnemy, idx, title) {
-      const canvasW = 960;
-      const canvasH = 580;
+      const canvasW = (this.game && this.game.canvas && this.game.canvas.width) || 960;
+      const canvasH = (this.game && this.game.canvas && this.game.canvas.height) || 580;
       let pos = { x: canvasW * 0.65, y: canvasH * 0.35 };
       if (idx >= 0) {
         pos = targetIsEnemy
@@ -314,7 +316,7 @@
         this.finishVictory();
         return true;
       }
-      const allHeroesDead = this.party.every((h) => h.hp <= 0);
+      const allHeroesDead = this.party.every((h) => !(h.hp > 0));
       if (allHeroesDead) {
         this.finishDefeat();
         return true;
@@ -518,7 +520,7 @@
           const mult = PalX.getElementMultiplier(coop.elem, en.elem);
           const raw = (coop.power * 1.35 + sumPower * 0.72 - en.def * 0.4) * mult;
           const dmg = Math.max(45, Math.floor(raw));
-          this.applyDamageToEnemy(en, idx, dmg, mult > 1.2 ? '五靈剋制!' : '', true);
+          this.applyDamageToEnemy(en, idx, dmg, mult > 1.2 ? '五曜剋制!' : '', true);
           if (coop.inflict && !en.dead) en.poison = coop.inflict;
         });
 
@@ -539,16 +541,16 @@
       if (cmd.type === 'skill') {
         const sk = PalX.SKILLS[cmd.skillId];
         if (!sk || hero.mp < sk.mp) {
-          this.pushLog('真氣不足，無法施展此仙術！');
+          this.pushLog('真氣不足，無法施展此武學秘術！');
           this.phase = 'input';
           if (this.game && this.game.ui) this.game.ui.updateBattleHud();
           return;
         }
 
-        // 乾坤一擲檢查文錢
+        // 漫天金錢鏢檢查文錢
         if (sk.type === 'coinAttack') {
           if (this.game.state.gold < sk.coinCost) {
-            this.pushLog(`文錢不足 ${sk.coinCost} 文，無法施展【乾坤一擲】！`);
+            this.pushLog(`文錢不足 ${sk.coinCost} 文，無法施展【${sk.name}】！`);
             this.phase = 'input';
             if (this.game && this.game.ui) this.game.ui.updateBattleHud();
             return;
@@ -556,10 +558,10 @@
           this.game.state.gold -= sk.coinCost;
           hero.mp -= sk.mp;
           hero.lastAction = cmd;
-          PalX.audio.sfx('magic');
+          PalX.audio.sfx('coin');
           this.shakeTimer = 0.35;
           this.addVfx('coin_shower', true, this.firstLivingEnemyIdx());
-          this.pushLog(`${hero.name}豪擲 ${sk.coinCost} 文錢施展【乾坤一擲】！漫天金錢破空貫敵！`);
+          this.pushLog(`${hero.name}豪擲 ${sk.coinCost} 文錢施展【${sk.name}】！漫天金錢破空貫敵！`);
           this.enemies.forEach((en, idx) => {
             if (en.dead) return;
             const dmg = Math.floor(sk.power + eff.mag * 1.8 + eff.lck * 1.5);
@@ -569,16 +571,16 @@
           return;
         }
 
-        // 酒神絕技檢查 (一生限用9次 + 背包有酒)
+        // 醉月狂歌絕技檢查 (一生限用9次 + 背包有酒)
         if (sk.type === 'wineGod') {
           if (this.game.state.wineGodUses >= 9) {
-            this.pushLog('【酒神】一生僅能召喚九次，已達天道極限！');
+            this.pushLog(`【${sk.name}】一生僅能施展九次，已達劍道極限！`);
             this.phase = 'input';
             return;
           }
           const wineId = ['guihuajiu', 'shaodaozi'].find((id) => (this.game.state.inventory[id] || 0) > 0);
           if (!wineId) {
-            this.pushLog('行囊中沒有美酒（桂花酒或燒刀子），無法召喚【酒神】！');
+            this.pushLog(`行囊中沒有美酒（煙波桂花釀或錦官烈火燒），無法施展【${sk.name}】！`);
             this.phase = 'input';
             return;
           }
@@ -588,11 +590,11 @@
           hero.mp = 0;
           PalX.audio.sfx('magic');
           this.shakeTimer = 0.7;
-          this.addVfx('wine_god', true, this.firstLivingEnemyIdx(), '醉劍喚酒神');
+          this.addVfx('wine_god', true, this.firstLivingEnemyIdx(), '醉月劍神降臨');
           const dmg = Math.floor(usedMp * 8 + eff.atk * 2);
-          this.pushLog(`${hero.name}仰天痛飲【${PalX.ITEMS[wineId].name}】，傾盡真氣第 ${this.game.state.wineGodUses}/9 次召喚【酒神】！`);
+          this.pushLog(`${hero.name}仰天痛飲【${PalX.ITEMS[wineId].name}】，傾盡真氣第 ${this.game.state.wineGodUses}/9 次施展至高劍意【${sk.name}】！`);
           this.enemies.forEach((en, idx) => {
-            if (!en.dead) this.applyDamageToEnemy(en, idx, dmg, '酒神天威!', true);
+            if (!en.dead) this.applyDamageToEnemy(en, idx, dmg, '醉月劍威!', true);
           });
           this.scheduleNext(750);
           return;
@@ -601,7 +603,7 @@
         hero.mp -= sk.mp;
         if (sk.type !== 'wineGod' && sk.type !== 'coinAttack') hero.lastAction = cmd;
 
-        // 飛雲探龍手 (偷竊!)
+        // 探雲摘星手 (偷竊!)
         if (sk.type === 'steal') {
           const tIdx = cmd.targetIdx != null ? cmd.targetIdx : this.selectedEnemyIdx;
           const target = this.enemies[tIdx] || this.enemies[this.firstLivingEnemyIdx()];
@@ -626,10 +628,10 @@
               }
               PalX.audio.sfx('item');
               const txt = gotParts.join('、') || '50 文錢';
-              this.pushLog(`${hero.name}施展【飛雲探龍手】，妙手探得 ${txt}！`);
-              this.addPopup(true, tIdx, `偷得 ${txt}`, '#ffd54f', true);
+              this.pushLog(`${hero.name}施展【${sk.name}】，妙手探得 ${txt}！`);
+              this.addPopup(true, tIdx, `探得 ${txt}`, '#ffd54f', true);
             } else {
-              this.pushLog(`${hero.name}探手失誤，差點被${target.name}咬了一口！`);
+              this.pushLog(`${hero.name}探手失誤，差點被${target.name}反咬一口！`);
               this.addPopup(true, tIdx, '失手!', '#cfd8dc');
             }
           }
@@ -705,7 +707,7 @@
 
         for (const t of targets) {
           if (!t.e || t.e.dead) continue;
-          this.addVfx(vfxByElem[sk.elem] || 'sword_rain', true, t.i, sk.type === 'mengshe' ? '女媧聖靈' : '');
+          this.addVfx(vfxByElem[sk.elem] || 'sword_rain', true, t.i, sk.type === 'mengshe' ? '望舒天籟' : '');
           const statBase = sk.scale === 'atk' ? eff.atk * 1.55 : sk.scale === 'both' ? (eff.atk + eff.mag) * 0.92 : eff.mag * 1.65;
           const mult = PalX.getElementMultiplier(sk.elem, t.e.elem);
           const defMit = t.e.def * (sk.ignoreDef ? (1 - sk.ignoreDef) : 1) * 0.45;
@@ -733,7 +735,7 @@
           });
         }
 
-        this.pushLog(`${hero.name}施展仙術【${sk.name}】！`);
+        this.pushLog(`${hero.name}施展秘術【${sk.name}】！`);
         this.scheduleNext(520);
         return;
       }
@@ -754,7 +756,7 @@
             if (m.hp > 0) {
               m.buffs[item.buff.id] = item.buff.turns;
               if (item.hp) m.hp = Math.min(m.maxHp, m.hp + item.hp);
-              this.addPopup(false, this.party.indexOf(m), item.buff.id === 'stealth' ? '隱蠱無敵!' : '酒力加身!', '#ffe082', true);
+              this.addPopup(false, this.party.indexOf(m), item.buff.id === 'stealth' ? '幻霧隱身!' : '酒力加身!', '#ffe082', true);
             }
           });
           this.pushLog(`${hero.name}使用了【${item.name}】！`);
@@ -767,7 +769,7 @@
           const learned = levelUpHeroOnce(target);
           PalX.audio.sfx('levelup');
           this.addPopup(false, this.party.indexOf(target), `修行+1 (Lv.${target.level})`, '#ffd54f', true);
-          this.pushLog(`${target.name}服下【金蠶王】，修行突破至第 ${target.level} 重！${learned.length ? '領悟 ' + learned.join('、') : ''}`);
+          this.pushLog(`${target.name}服下【${item.name}】，修行突破至第 ${target.level} 重！${learned.length ? '領悟 ' + learned.join('、') : ''}`);
           this.scheduleNext(500);
           return;
         }
@@ -865,7 +867,7 @@
 
       const livingHeroes = this.party.map((h, i) => ({ h, i })).filter((x) => x.h.hp > 0);
       if (!livingHeroes.length) {
-        this.advanceTurn();
+        this.checkBattleEnd();
         return;
       }
 
@@ -961,7 +963,7 @@
         lvLogs.push(...msgs);
       }
 
-      PalX.audio.sfx(lvLogs.length ? 'levelup' : 'item');
+      PalX.audio.sfx(lvLogs.length ? 'levelup' : 'victory');
       const cb = this.onVictory;
       const summary = {
         exp: totalExp,

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>《仙劍X：霧魂殘夢》— 經典45度斜視角仙俠RPG</title>
+  <title>《仙劍X：燼月長歌》— 經典45度斜視角原創仙俠RPG · 九州十六境長篇巨製</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -11,13 +11,13 @@
   <section id="title-screen" class="title-screen">
     <canvas id="title-canvas" width="960" height="580"></canvas>
     <div class="title-overlay">
-      <div class="title-emblem">神農九泉 · 五靈宿命 · 參照仙劍一經典玩法</div>
-      <h1 class="title-logo">仙劍<span>X</span>：霧魂殘夢</h1>
-      <p class="title-poem">一壺桂酒江湖夢，十載霧魂宿命人</p>
+      <div class="title-emblem">太初墜星 · 五曜鎮淵 · 原創經典45度斜視角仙俠長歌</div>
+      <h1 class="title-logo">仙劍<span>X</span>：燼月長歌</h1>
+      <p class="title-poem">煙波一棹聽江雨，半枚殘鈴繫舊塵</p>
       <div class="title-actions">
         <button id="btn-title-new" class="pal-btn-lg">⚔️ 新的故事（初入江湖）</button>
         <button id="btn-title-load" class="pal-btn-lg">📜 舊夢重溫（讀取卷軸）</button>
-        <button id="btn-title-lore" class="pal-btn-lg secondary">☯️ 六界九泉錄（仙劍1~7典籍）</button>
+        <button id="btn-title-lore" class="pal-btn-lg secondary">☯️ 九州錄（太初五曜典籍）</button>
       </div>
       <div class="title-footer">
         操作：8向 WASD／方向鍵、滑鼠點擊或長按拖曳行走（Shift 疾行）｜ 空白鍵／點擊調查翻箱 ｜ 戰鬥快捷鍵 A圍攻 F仙術 D防禦 W投擲 R重複 Q逃跑
@@ -36,6 +36,7 @@
       <div id="hud-party-mini" class="hud-party-mini"></div>
       <div class="hud-right">
         <span class="hud-gold-box">🪙 <b id="hud-gold">260 文</b></span>
+        <button id="btn-hud-minimap" class="pal-btn-sm" title="切換微縮地圖">🗺️ 地圖</button>
         <button id="btn-hud-audio" class="pal-btn-sm">🎵 仙樂開</button>
         <button id="btn-hud-menu" class="pal-btn-sm">📖 選單 [Esc]</button>
       </div>
@@ -56,6 +57,7 @@
         </div>
         <div class="vctrl-actions">
           <button id="btn-vsprint" class="vact-btn sprint" title="切換御風疾行 [Shift]">疾</button>
+          <button id="btn-vmap" class="vact-btn map" title="切換小地圖">圖</button>
           <button id="btn-vact" data-dpad="act" class="vact-btn act" title="調查 / 對話 [空白鍵]">查</button>
         </div>
       </div>
@@ -152,12 +154,14 @@
       <div class="menu-header">
         <nav class="menu-tabs">
           <button data-menutab="status" class="active">狀態</button>
-          <button data-menutab="magic">仙術</button>
-          <button data-menutab="items">物品</button>
+          <button data-menutab="magic">武學</button>
+          <button data-menutab="items">行囊</button>
           <button data-menutab="equip">裝備</button>
-          <button data-menutab="gu">煉蠱皿</button>
-          <button data-menutab="lore">六界九泉錄</button>
-          <button data-menutab="system">存檔系統</button>
+          <button data-menutab="gu">百草鼎</button>
+          <button data-menutab="quests">任務</button>
+          <button data-menutab="music">仙樂</button>
+          <button data-menutab="lore">九州錄</button>
+          <button data-menutab="system">存檔</button>
         </nav>
         <button id="btn-menu-close" class="pal-btn-xs">✕ 返回</button>
       </div>

@@ -309,27 +309,27 @@ button:disabled {
 #game-canvas {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  display: block;
   cursor: crosshair;
   touch-action: none;
 }
 
 .virtual-controls {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 6;
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  opacity: 0.9;
-  touch-action: none;
+  inset: auto 0 0 0;
+  height: 0;
+  z-index: 15;
+  pointer-events: none;
+  transition: opacity 0.2s;
 }
 
 .vjoy-pad {
-  position: relative;
-  width: 104px;
-  height: 104px;
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  pointer-events: auto;
+  width: 108px;
+  height: 108px;
   border-radius: 50%;
   background:
     radial-gradient(circle at center, rgba(24, 52, 98, 0.88) 0%, rgba(8, 18, 38, 0.92) 72%, rgba(5, 11, 24, 0.96) 100%);
@@ -381,10 +381,23 @@ button:disabled {
 }
 
 .vctrl-actions {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
   align-items: center;
+}
+
+.vact-btn.map {
+  width: 38px;
+  height: 38px;
+  font-size: 0.84rem;
+  background: radial-gradient(circle at 35% 30%, #5d4037 0%, #3e2723 100%);
+  border-color: rgba(226, 190, 107, 0.75);
+  color: #ffe082;
 }
 
 .vact-btn {
@@ -1255,38 +1268,255 @@ button:disabled {
   line-height: 1.7;
 }
 
-/* 響應式行動端適配 (320px ~ 768px) */
-@media (max-width: 768px) {
+
+/* ================= 任務卷軸與仙樂鑑賞樣式 ================= */
+.quests-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.quest-main-box {
+  background: rgba(20, 38, 72, 0.88);
+  border: 1.5px solid var(--pal-gold);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.quest-main-box h4 {
+  color: #ffe082;
+  font-size: 1.02rem;
+  margin-bottom: 6px;
+}
+.quest-main-box p {
+  color: #e0f2f1;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.quest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+.quest-card {
+  background: rgba(11, 24, 48, 0.85);
+  border: 1px solid rgba(226, 190, 107, 0.35);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.quest-card.done {
+  border-color: #69f0ae;
+  background: rgba(14, 40, 36, 0.7);
+}
+.quest-card.ready {
+  border-color: #ffd54f;
+  background: rgba(46, 38, 16, 0.7);
+}
+.quest-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.quest-card-head b {
+  color: #fff8e1;
+  font-size: 0.94rem;
+}
+.quest-badge {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-weight: bold;
+}
+.quest-badge.done { background: #2e7d32; color: #fff; }
+.quest-badge.ready { background: #f57f17; color: #fff; }
+.quest-badge.prog { background: #0277bd; color: #fff; }
+.quest-badge.unseen { background: #455a64; color: #b0bec5; font-weight: normal; }
+.quest-desc {
+  font-size: 0.82rem;
+  color: var(--pal-muted);
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+.quest-reward {
+  font-size: 0.78rem;
+  color: var(--pal-jade);
+}
+
+.music-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.music-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+.music-card {
+  background: rgba(12, 26, 52, 0.85);
+  border: 1px solid rgba(226, 190, 107, 0.4);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.music-card.playing {
+  border-color: #69f0ae;
+  box-shadow: 0 0 12px rgba(105, 240, 174, 0.35);
+  background: rgba(16, 42, 54, 0.9);
+}
+.music-card-info b {
+  color: #ffe082;
+  font-size: 0.92rem;
+  display: block;
+  margin-bottom: 2px;
+}
+.music-card-info span {
+  color: #80deea;
+  font-size: 0.78rem;
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.menu-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* 響應式行動端適配 (320px ~ 820px) — 滿版零黑邊、緊湊HUD與雙手觸控 */
+@media (max-width: 820px) {
   .status-grid, .equip-layout, .gu-cols {
     grid-template-columns: 1fr;
   }
+  .top-hud {
+    padding: 5px 8px;
+    gap: 6px;
+  }
+  .hud-map-title {
+    font-size: 0.88rem;
+  }
+  .hud-quest-row {
+    font-size: 0.78rem;
+  }
   .hud-party-mini {
-    display: none;
+    display: flex !important;
+    gap: 4px;
+    align-items: center;
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 2px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .hud-hero-pill {
+    min-width: 70px;
+    padding: 2px 5px;
+    font-size: 0.72rem;
   }
   .dialogue-box {
-    flex-direction: column;
-    align-items: center;
-    text-align: left;
-    padding: 10px 12px;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    padding: 10px 12px !important;
+    gap: 10px !important;
+    width: 95% !important;
+    max-height: 200px !important;
   }
   .dlg-portrait-wrap {
-    width: 76px;
-    height: 76px;
+    width: 68px !important;
+    height: 68px !important;
+    min-width: 68px !important;
+  }
+  #dlg-text {
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+    max-height: 130px !important;
+    overflow-y: auto;
+  }
+  .dlg-next-hint {
+    font-size: 0.72rem;
+    margin-top: 3px;
+  }
+  .battle-bottom-ui {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .battle-hero-cards {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    width: 100%;
+    justify-content: flex-start;
+    padding-bottom: 2px;
   }
   .bhero-card {
-    min-width: 138px;
-    padding: 4px 6px;
+    flex: 1;
+    min-width: 108px;
+    padding: 3px 5px;
   }
   .bhero-portrait {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+  }
+  .battle-command-zone {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
   }
   .diamond-menu {
-    grid-template-columns: repeat(3, 46px);
-    grid-template-rows: repeat(3, 36px);
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(3, 30px);
   }
-  .virtual-controls {
+  .diamond-btn span {
+    font-size: 0.95rem;
+  }
+  .diamond-btn small {
+    display: none;
+  }
+  .battle-quick-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+  }
+  .battle-quick-strip button {
+    font-size: 0.72rem;
+    padding: 3px 5px;
+  }
+  #battle-drawer {
+    width: 96%;
+    left: 2%;
+    bottom: 8px;
+    max-height: 55vh;
+  }
+  .vjoy-pad {
+    left: 12px;
+    bottom: 12px;
+    width: 98px;
+    height: 98px;
+  }
+  .vctrl-actions {
     right: 12px;
-    bottom: 18px;
+    bottom: 12px;
+    gap: 6px;
+  }
+  .vact-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 0.92rem;
+  }
+  .vact-btn.sprint, .vact-btn.map {
+    width: 36px;
+    height: 36px;
+    font-size: 0.8rem;
   }
 }
