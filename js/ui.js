@@ -47,9 +47,26 @@
         logicalW = 880;
       }
       const logicalH = Math.max(360, Math.round(logicalW * (vh / vw)));
-      if (canvas.width !== logicalW || canvas.height !== logicalH) {
-        canvas.width = logicalW;
-        canvas.height = logicalH;
+      this.game.logicalW = logicalW;
+      this.game.logicalH = logicalH;
+
+      // 原生 High-DPI / DevicePixelRatio 像素緩衝區支持，消弭瀏覽器拉伸模糊，畫面極致銳利清晰
+      const dpr = Math.min(2.5, window.devicePixelRatio || 1);
+      const targetW = Math.round(vw * dpr);
+      const targetH = Math.round(vh * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+
+      const tCanvas = document.getElementById('title-canvas');
+      if (tCanvas) {
+        const tw = Math.round(vw * dpr);
+        const th = Math.round(vh * dpr);
+        if (tCanvas.width !== tw || tCanvas.height !== th) {
+          tCanvas.width = tw;
+          tCanvas.height = th;
+        }
       }
     }
 
@@ -166,9 +183,11 @@
     getCanvasCoords(ev) {
       const canvas = this.game.canvas;
       const rect = canvas.getBoundingClientRect();
+      const logicalW = this.game.logicalW || canvas.width;
+      const logicalH = this.game.logicalH || canvas.height;
       return {
-        sx: ((ev.clientX - rect.left) / Math.max(1, rect.width)) * canvas.width,
-        sy: ((ev.clientY - rect.top) / Math.max(1, rect.height)) * canvas.height
+        sx: ((ev.clientX - rect.left) / Math.max(1, rect.width)) * logicalW,
+        sy: ((ev.clientY - rect.top) / Math.max(1, rect.height)) * logicalH
       };
     }
 
@@ -177,6 +196,8 @@
       const map = PalX.MAPS[this.game.state.mapId];
       if (!map) return null;
       const canvas = this.game.canvas;
+      const lw = this.game.logicalW || canvas.width;
+      const lh = this.game.logicalH || canvas.height;
       const flags = this.game.state.flags || {};
 
       // 由前景至背景排序，確保視覺在最前方的 NPC / 寶箱 / 首領優先命中
@@ -187,7 +208,7 @@
       }).sort((a, b) => (b.x + b.y) - (a.x + a.y));
 
       for (const obj of activeObjs) {
-        const pt = PalX.graphics.tileToScreen(obj.x, obj.y, this.game.camX, this.game.camY, canvas.width, canvas.height);
+        const pt = PalX.graphics.tileToScreen(obj.x, obj.y, this.game.camX, this.game.camY, lw, lh);
         let halfW = 20;
         let topH = 40;
         let botH = 12;
@@ -220,8 +241,10 @@
         return;
       }
       const canvas = this.game.canvas;
+      const lw = this.game.logicalW || canvas.width;
+      const lh = this.game.logicalH || canvas.height;
       const rp = this.game.renderPlayer || this.game.playerPos;
-      const heroPt = PalX.graphics.tileToScreen(rp.x, rp.y, this.game.camX, this.game.camY, canvas.width, canvas.height);
+      const heroPt = PalX.graphics.tileToScreen(rp.x, rp.y, this.game.camX, this.game.camY, lw, lh);
       const dx = sx - heroPt.x;
       const dy = (sy + 10) - heroPt.y;
       if (Math.hypot(dx, dy) > 16) {
@@ -233,6 +256,8 @@
 
     handleCanvasTap(sx, sy) {
       const canvas = this.game.canvas;
+      const lw = this.game.logicalW || canvas.width;
+      const lh = this.game.logicalH || canvas.height;
       if (this.game.showMiniMap && this.game.miniMapRect) {
         const mm = this.game.miniMapRect;
         if (sx >= mm.x && sx <= mm.x + mm.w && sy >= mm.y && sy <= mm.y + mm.h) {
@@ -247,7 +272,7 @@
         const b = this.game.battle;
         b.enemies.forEach((en, idx) => {
           if (en.dead) return;
-          const pos = PalX.graphics.getEnemyBattlePos(idx, b.enemies.length, canvas.width, canvas.height);
+          const pos = PalX.graphics.getEnemyBattlePos(idx, b.enemies.length, lw, lh);
           const hitR = en.isBoss ? 72 : 52;
           const centerOffset = en.isBoss ? 52 : 32;
           if (Math.hypot(sx - pos.x, sy - (pos.y - centerOffset)) < hitR) {
@@ -260,7 +285,7 @@
       }
 
       const hitObj = this.hitTestMapObject(sx, sy);
-      const tile = PalX.graphics.screenToTile(sx, sy, this.game.camX, this.game.camY, canvas.width, canvas.height);
+      const tile = PalX.graphics.screenToTile(sx, sy, this.game.camX, this.game.camY, lw, lh);
       this.game.handleMapClick(tile.x, tile.y, hitObj);
     }
 
@@ -318,8 +343,10 @@
         pCurSY = sy;
 
         if (!this.game.battle.active && this.game.state) {
+          const lw = this.game.logicalW || canvas.width;
+          const lh = this.game.logicalH || canvas.height;
           const hObj = this.hitTestMapObject(sx, sy);
-          const hTile = PalX.graphics.screenToTile(sx, sy, this.game.camX, this.game.camY, canvas.width, canvas.height);
+          const hTile = PalX.graphics.screenToTile(sx, sy, this.game.camX, this.game.camY, lw, lh);
           this.game.hoverObj = hObj;
           this.game.hoverTile = hTile;
           canvas.style.cursor = pDragging ? 'grabbing' : (hObj ? 'pointer' : 'crosshair');

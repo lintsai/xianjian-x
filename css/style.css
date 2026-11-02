@@ -132,6 +132,8 @@ button:disabled {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  image-rendering: auto;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .title-overlay {
@@ -312,6 +314,8 @@ button:disabled {
   display: block;
   cursor: crosshair;
   touch-action: none;
+  image-rendering: auto;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .virtual-controls {

@@ -212,8 +212,8 @@
     }
 
     addPopup(targetIsEnemy, idx, text, color, big) {
-      const canvasW = (this.game && this.game.canvas && this.game.canvas.width) || 960;
-      const canvasH = (this.game && this.game.canvas && this.game.canvas.height) || 580;
+      const canvasW = (this.game && this.game.logicalW) || (this.game && this.game.canvas && this.game.canvas.width) || 960;
+      const canvasH = (this.game && this.game.logicalH) || (this.game && this.game.canvas && this.game.canvas.height) || 580;
       const pos = targetIsEnemy
         ? PalX.graphics.getEnemyBattlePos(idx, this.enemies.length, canvasW, canvasH)
         : PalX.graphics.getHeroBattlePos(idx, this.party.length, canvasW, canvasH);
@@ -230,8 +230,8 @@
     }
 
     addVfx(kind, targetIsEnemy, idx, title) {
-      const canvasW = (this.game && this.game.canvas && this.game.canvas.width) || 960;
-      const canvasH = (this.game && this.game.canvas && this.game.canvas.height) || 580;
+      const canvasW = (this.game && this.game.logicalW) || (this.game && this.game.canvas && this.game.canvas.width) || 960;
+      const canvasH = (this.game && this.game.logicalH) || (this.game && this.game.canvas && this.game.canvas.height) || 580;
       let pos = { x: canvasW * 0.65, y: canvasH * 0.35 };
       if (idx >= 0) {
         pos = targetIsEnemy
