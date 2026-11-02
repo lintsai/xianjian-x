@@ -1,0 +1,21 @@
+{
+  "name": "xianjian-x-mist-of-destiny",
+  "version": "1.0.0",
+  "description": "《仙劍X：霧魂殘夢》—— 融匯仙劍1~7與前外傳世界觀、致敬仙劍1經典45度斜視角探索與回合制玩法的原創仙俠RPG網頁遊戲",
+  "main": "js/main.js",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node tests/test_pal_x.js"
+  },
+  "keywords": [
+    "xianjian",
+    "chinese-paladin",
+    "sword-and-fairy",
+    "rpg",
+    "isometric",
+    "wuxia",
+    "xianxia"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
