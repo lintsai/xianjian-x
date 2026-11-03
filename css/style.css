@@ -244,12 +244,13 @@ button:disabled {
 
 /* ================= 主遊戲舞台與頂部 HUD ================= */
 .game-stage {
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  max-width: 1180px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
 }
 
 .top-hud {
@@ -377,6 +378,13 @@ button:disabled {
   z-index: 15;
   pointer-events: none;
   transition: opacity 0.2s;
+}
+
+/* 桌機鍵鼠玩家免除虛擬搖桿遮擋，保留清爽開闊視野；手機觸控螢幕自動顯示 */
+@media (hover: hover) and (pointer: fine) {
+  .virtual-controls {
+    display: none !important;
+  }
 }
 
 .vjoy-pad {

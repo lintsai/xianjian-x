@@ -63,12 +63,13 @@
   ];
 
   const IMAGE_CACHE = {};
+  const ASSET_VERSION = '20261103_pro';
 
   function preloadAssets() {
     if (typeof Image === 'undefined') return;
     for (const rel of ASSET_MANIFEST) {
       const img = new Image();
-      img.src = 'assets/' + rel;
+      img.src = 'assets/' + rel + '?v=' + ASSET_VERSION;
       IMAGE_CACHE[rel] = img;
     }
   }
@@ -77,7 +78,7 @@
     if (typeof Image === 'undefined') return null;
     if (!IMAGE_CACHE[rel]) {
       const img = new Image();
-      img.src = 'assets/' + rel;
+      img.src = 'assets/' + rel + '?v=' + ASSET_VERSION;
       IMAGE_CACHE[rel] = img;
     }
     return IMAGE_CACHE[rel];
@@ -988,21 +989,36 @@
       labelY = -106;
     }
 
-    // 頭頂圓角古風名牌 + 服務徽章 + 任務標記 + 氣泡短語
+    // 頭頂名牌與任務引導：專業級 RPG 介面規範（接近或游標指向時顯示名牌，平時僅浮現精緻任務光標，杜絕滿屏廣告板）
     if (obj.type === 'npc' || obj.type === 'boss' || obj.type === 'portal') {
-      const badge = obj.serviceBadge ? `[${obj.serviceBadge}] ` : '';
-      const prefix = highlighted
-        ? (obj.type === 'boss' ? '【伏魔】' : obj.type === 'portal' ? '【渡口】' : '【會客】')
-        : badge;
-      const borderCol = highlighted
-        ? '#ffe082'
-        : (obj.type === 'boss' ? 'rgba(255,138,128,0.65)' : 'rgba(226,190,107,0.5)');
-      const txtCol = obj.type === 'boss' ? '#ff8a80' : obj.type === 'portal' ? '#80deea' : '#ffe082';
-      drawRoundedTag(ctx, 0, labelY, prefix + obj.name, 'rgba(7, 15, 32, 0.88)', borderCol, txtCol);
+      const isBoss = obj.type === 'boss';
+      const isPortal = obj.type === 'portal';
+      const showNameTag = highlighted || isBoss || isPortal;
 
-      // 任務標記 (! 主線 / 准 可回報支線 / ? 可接支線)
+      if (showNameTag) {
+        const badge = obj.serviceBadge ? `[${obj.serviceBadge}] ` : '';
+        const prefix = highlighted
+          ? (isBoss ? '【伏魔】' : isPortal ? '【渡口】' : '【會客】')
+          : badge;
+        const borderCol = highlighted
+          ? '#ffe082'
+          : (isBoss ? 'rgba(255,138,128,0.65)' : 'rgba(226,190,107,0.5)');
+        const txtCol = isBoss ? '#ff8a80' : isPortal ? '#80deea' : '#ffe082';
+        drawRoundedTag(ctx, 0, labelY, prefix + obj.name, 'rgba(7, 15, 32, 0.88)', borderCol, txtCol);
+
+        // 靠近可互動時額外浮現精緻按鍵指引
+        if (highlighted && !isBoss && !isPortal) {
+          ctx.font = '10px "Microsoft JhengHei", sans-serif';
+          ctx.fillStyle = 'rgba(255, 238, 145, 0.92)';
+          ctx.textAlign = 'center';
+          ctx.fillText('[ 空白鍵 / 點擊 ] 交談', 0, labelY + 16);
+        }
+      }
+
+      // 任務標記 (! 主線 / 准 可回報支線 / ? 可接支線) - 始終保留呼吸感精緻法寶光標
       if (obj.questMarker) {
-        const qy = labelY - 19 + Math.sin(time * 6) * 2.2;
+        const markerBaseY = showNameTag ? labelY - 19 : labelY - 4;
+        const qy = markerBaseY + Math.sin(time * 6) * 2.2;
         const isMain = obj.questMarker === '!';
         const isTurnIn = obj.questMarker === '✓' || obj.questMarker === '准';
         const qBg = isMain ? '#ffb300' : (isTurnIn ? '#69f0ae' : '#4fc3f7');
@@ -1022,7 +1038,7 @@
 
       // 浮動生活氣泡短語
       if (obj.activeBark && !highlighted) {
-        const barkTop = obj.questMarker ? labelY - 32 : labelY - 17;
+        const barkTop = obj.questMarker ? labelY - 26 : labelY - 14;
         drawSpeechBubble(ctx, 0, barkTop, obj.activeBark, obj.barkAlpha || 1);
       }
     } else if (highlighted) {
@@ -1635,11 +1651,11 @@
     if (count === 1) {
       return { x: w * 0.68, y: h * 0.45 };
     }
-    const stepX = Math.min(74, (w * 0.28) / Math.max(1, count - 1));
-    const stepY = Math.min(42, h * 0.075);
+    const stepX = Math.min(130, (w * 0.34) / Math.max(1, count - 1));
+    const stepY = Math.min(44, h * 0.08);
     return {
-      x: w * 0.57 + idx * stepX,
-      y: h * 0.38 + idx * stepY
+      x: w * 0.52 + idx * stepX,
+      y: h * 0.36 + idx * stepY
     };
   }
 
@@ -1786,7 +1802,8 @@
         const bx = Math.max(8, Math.min(w - barW - 8, pos.x - barW / 2));
         const rawTop = en.sprite === 'boss_shuimoshou' ? 182 : (en.isBoss ? 158 : 98);
         const topOffset = rawTop * (isPortrait ? 0.82 : 1.0);
-        const by = Math.max(54, pos.y - topOffset);
+        const staggerY = (battle.enemies.length > 1 && idx % 2 === 1) ? 32 : 0;
+        const by = Math.max(54, pos.y - topOffset - staggerY);
 
         ctx.fillStyle = 'rgba(7, 15, 32, 0.88)';
         ctx.fillRect(bx - 5, by - 17, barW + 10, 26);

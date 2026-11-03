@@ -43,6 +43,10 @@
       let logicalW = 620;
       if (vw < 640 || vh > vw) {
         logicalW = Math.max(380, Math.min(480, Math.round(vw * 0.95)));
+      } else {
+        // 桌機滿版寬螢幕：依視窗寬高比自適應視野，垂直邏輯高度穩定於約 420px，消除兩側黑邊
+        const targetViewH = 420;
+        logicalW = Math.max(600, Math.min(840, Math.round(targetViewH * (vw / vh))));
       }
       this.game.logicalW = logicalW;
 
@@ -1609,7 +1613,7 @@
       document.getElementById('ending-title').textContent = ending.title;
       document.getElementById('ending-poem').innerHTML = ending.poem.split('\n').map((l) => `<p>${l}</p>`).join('');
       document.getElementById('ending-stats').innerHTML = `
-        <span>陸逍修行：第 ${st.heroes.luxiao.level} 重</span>
+        <span>裴少游修行：第 ${st.heroes.luxiao.level} 重</span>
         <span>宿命記憶碎片：${this.game.getItemCount('memory_shard')} 枚</span>
         <span>領悟丹方：${st.discoveredRecipes.length} 種</span>
         <span>歷練時光：約 ${mins} 分鐘</span>
