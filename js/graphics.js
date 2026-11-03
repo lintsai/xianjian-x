@@ -502,24 +502,32 @@
       ctx.stroke();
     }
 
-    // 1. 足底鞋底接地接觸暗核 (Contact Occlusion Shadow) —— 緊貼鞋底接觸線，徹底消除懸空
+    // 1. 腳下柔和沉穩落地漫反射陰影 (Ambient Floor Shadow) —— 嚴格鎖定 2:1 斜角地磚傾角 (0.529)，漸層自然擴散
     if (!isFloat) {
-      ctx.fillStyle = isCollapse ? 'rgba(8, 6, 4, 0.58)' : 'rgba(10, 8, 6, 0.78)';
+      const shadowR = opts.battle ? 24 : (isCollapse ? 20 : 14);
+      const shadowH = shadowR * 0.529;
+      const shadowGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, shadowR * scale);
+      shadowGrad.addColorStop(0, 'rgba(12, 16, 26, 0.42)');
+      shadowGrad.addColorStop(0.55, 'rgba(12, 16, 26, 0.18)');
+      shadowGrad.addColorStop(1, 'rgba(12, 16, 26, 0)');
+      ctx.fillStyle = shadowGrad;
       ctx.beginPath();
-      ctx.ellipse(0, 0.5 * scale, 9.5 * scale, 3.2 * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, shadowR * scale, shadowH * scale, 0, 0, Math.PI * 2);
       ctx.fill();
-    }
 
-    // 2. 腳下柔和沉穩落地漫反射陰影 (Ambient Drop Shadow)
-    const shadowR = opts.battle ? 23 : (isCollapse ? 20 : 13.5);
-    const shadowGrad = ctx.createRadialGradient(0, 0.8 * scale, 1, 0, 0.8 * scale, shadowR * scale);
-    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.55)');
-    shadowGrad.addColorStop(0.55, 'rgba(0, 0, 0, 0.28)');
-    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = shadowGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 0.8 * scale, (shadowR + 1) * scale, (shadowR * 0.44) * scale, 0, 0, Math.PI * 2);
-    ctx.fill();
+      // 2. 雙足底接地接觸暗核 (Contact Occlusion Spots) —— 緊貼鞋底踏線，100% 物理貼地，徹底消除懸空
+      if (!isCollapse && !opts.dead) {
+        ctx.fillStyle = 'rgba(8, 10, 16, 0.65)';
+        // 左足接觸點 (朝前)
+        ctx.beginPath();
+        ctx.ellipse(-5 * scale, 0.5 * scale, 4.2 * scale, 2.2 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // 右足接觸點 (朝後微偏上)
+        ctx.beginPath();
+        ctx.ellipse(5 * scale, -2.2 * scale, 3.8 * scale, 2.0 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
     if (opts.tiangang) {
       ctx.strokeStyle = '#ffd54f';
@@ -558,7 +566,7 @@
 
     if (img) {
       const baseH = opts.battle
-        ? 84
+        ? (spriteId === 'aman' ? 74 : (spriteId === 'yueling' ? 76 : 84))
         : (spriteId === 'child_boy' ? 40 : (spriteId === 'fox' ? 34 : 50));
 
       const isMultiFrame = img.naturalWidth >= img.naturalHeight * 3.2;
@@ -585,12 +593,12 @@
         const drawH = baseH;
         const drawW = drawH * aspect;
         const sx = frameIdx * frameW;
-        ctx.drawImage(img, sx, 0, frameW, frameH, -drawW / 2, -drawH + bob, drawW, drawH);
+        ctx.drawImage(img, sx, 0, frameW, frameH, -drawW / 2, -drawH + bob + 1, drawW, drawH);
       } else {
         const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
         const drawH = baseH;
         const drawW = drawH * aspect;
-        ctx.drawImage(img, -drawW / 2, -drawH + bob, drawW, drawH);
+        ctx.drawImage(img, -drawW / 2, -drawH + bob + 1, drawW, drawH);
       }
     } else {
       ctx.fillStyle = '#3b6ea5';

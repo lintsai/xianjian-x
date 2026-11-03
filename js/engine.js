@@ -2527,9 +2527,10 @@
             const ep = npc.stepElapsed / Math.max(0.01, npc.stepDur);
             npc.rx = npc.fromX + (npc.toX - npc.fromX) * ep;
             npc.ry = npc.fromY + (npc.toY - npc.fromY) * ep;
-            npc.runtimeWalkPhase += dt * 8;
+            npc.runtimeWalkPhase = (npc.totalSteps || 0) * Math.PI + ep * Math.PI * 2;
             npc.runtimeMoving = true;
             if (ep >= 1) {
+              npc.totalSteps = (npc.totalSteps || 0) + 2;
               npc.x = npc.toX;
               npc.y = npc.toY;
               npc.rx = npc.x;
@@ -2755,4 +2756,4 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = { GameEngine };
   }
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' ? window : globalThis);
