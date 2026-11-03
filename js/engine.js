@@ -1296,7 +1296,7 @@
                     this.state.activeParty = ['luxiao', 'yueling'];
                     this.fullRestoreParty();
                     this.showLines([
-                      { speaker: 'yueling', text: '「多謝少游援手！家父十八年前押送五曜風魄入鬼哭礦脈後下落不明，世人皆污我鎮遠鏢局通邪叛道！我沈驚鴻縱粉身碎骨，亦要洗雪沈門冤屈！」' },
+                      { speaker: 'yueling', text: '「多謝少游援手！家父十八年前押送五曜風魄入鬼哭礦脈後下落不明，世人皆污我鎮遠鏢局通邪叛道！我燕驚鴻縱粉身碎骨，亦要洗雪燕門冤屈！」' },
                       { speaker: 'narrator', text: '就在此時，留守客棧的白芷微感應到礦脈暗河妖氣激盪，已先一步趕往城東南【鬼哭礦脈】尋找地脈陣眼！' },
                       { speaker: 'luxiao', text: '「不好，芷微一人孤身犯險！燕姑娘，我們立刻同往鬼哭礦脈接應！」' },
                       { speaker: 'yueling', text: '「正合我意！持我這柄紅綾烈焰鞭，隨我闖入鬼哭溶洞！」' },
@@ -2202,13 +2202,13 @@
 
         case 'rift_boss_yexiao': {
           this.showLines([
-            { speaker: 'yexiao', text: '「桀桀！歸墟裂隙大開，水靈珠乃我魔界囊中之物！」' },
+            { speaker: 'yexiao', text: '「桀桀！歸墟裂隙大開，水曜靈魄乃我魔界囊中之物！」' },
             { speaker: 'luxiao', text: '「十八年前的悲劇，絕不容你在今日重演！」' }
           ], () => {
             this.startStoryBoss(['boss_yexiao'], {}, () => {
               f.defeated_yexiao = true;
               this.showLines([
-                { speaker: 'narrator', text: '夜梟潰滅，時空平定！快去找小阿鶴取得水靈珠！' }
+                { speaker: 'narrator', text: '夜梟潰滅，時空平定！快去找小阿鶴取得水曜靈魄！' }
               ], () => { if (this.ui) this.ui.updateTopHud(); });
             });
           });

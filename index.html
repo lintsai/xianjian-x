@@ -15,20 +15,15 @@
     <canvas id="title-canvas" width="960" height="580"></canvas>
     <div class="title-overlay">
       <div class="title-emblem">太初墜星 · 五曜鎮淵 · 原創經典45度斜視角仙俠長歌</div>
-      <div style="margin: 6px 0 12px 0;">
-        <span style="display:inline-block; padding:4px 14px; background:rgba(7,16,35,0.88); border:1px solid #4fc3f7; border-radius:14px; font-size:12px; color:#80deea; letter-spacing:1px; box-shadow:0 0 12px rgba(79,195,247,0.4);">
-          v3.0.0 · 經典仙劍Q版全角色畫風統一與專業級UI重構版
-        </span>
-      </div>
       <h1 class="title-logo">仙劍<span>X</span>：燼月長歌</h1>
-      <p class="title-poem">煙波一棹聽江雨，半枚殘鈴繫舊塵</p>
+      <p class="title-poem">煙波一棹聽江雨，半枚殘鈴繫舊塵<br><span style="font-size:0.92rem; opacity:0.85; letter-spacing:2px;">莫道天涯風雪惡，敢憑孤劍護斯人</span></p>
       <div class="title-actions">
         <button id="btn-title-new" class="pal-btn-lg"><img src="assets/ui_icons/sword.svg" class="pal-btn-icon" alt=""> 新的故事（初入江湖）</button>
         <button id="btn-title-load" class="pal-btn-lg"><img src="assets/ui_icons/menu.svg" class="pal-btn-icon" alt=""> 舊夢重溫（讀取卷軸）</button>
         <button id="btn-title-lore" class="pal-btn-lg secondary"><img src="assets/ui_icons/scroll.svg" class="pal-btn-icon" alt=""> 九州錄（太初五曜典籍）</button>
       </div>
       <div class="title-footer">
-        操作：8向 WASD／方向鍵、滑鼠點擊或長按拖曳行走（Shift 疾行）｜ 空白鍵／點擊調查翻箱 ｜ 戰鬥快捷鍵 A圍攻 F仙術 D防禦 W投擲 R重複 Q逃跑
+        8向 WASD／方向鍵、滑鼠點擊行走（Shift 疾行）｜ 空白鍵 調查翻箱 ｜ 戰鬥快捷鍵 [A]圍攻 [F]仙術 [D]防禦 [W]投擲 [R]重複 [Q]逃跑
       </div>
     </div>
   </section>
@@ -72,6 +67,26 @@
 
       <!-- ================= 仙劍1經典45度斜視角戰鬥介面 ================= -->
       <div id="battle-overlay" class="battle-overlay hidden">
+        <!-- 頂部巨型首領血條 (Cinematic Boss HUD) -->
+        <div id="battle-boss-hud" class="battle-boss-hud hidden">
+          <div class="boss-hud-header">
+            <span class="boss-hud-crest left">❖</span>
+            <span id="boss-hud-elem" class="boss-hud-elem">[火]</span>
+            <span id="boss-hud-name" class="boss-hud-name">血刃堂主·屠千刃</span>
+            <span id="boss-hud-title" class="boss-hud-title">無生教執令長老</span>
+            <span class="boss-hud-crest right">❖</span>
+          </div>
+          <div class="boss-hud-bar-container">
+            <div id="boss-hud-lag" class="boss-hud-lag"></div>
+            <div id="boss-hud-fill" class="boss-hud-fill"></div>
+            <div class="boss-hud-glow"></div>
+          </div>
+          <div class="boss-hud-footer">
+            <span id="boss-hud-phase" class="boss-hud-phase">逆宿煞氣 · 強敵現身</span>
+            <span id="boss-hud-hp-num" class="boss-hud-hp-num">580 / 580 (100%)</span>
+          </div>
+        </div>
+
         <div class="battle-top-bar">
           <div id="battle-log-bar" class="battle-log-bar">妖魔攔路，拔劍迎敵！</div>
           <div id="battle-enemy-targets" class="battle-enemy-targets"></div>

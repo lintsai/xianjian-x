@@ -108,7 +108,7 @@
       tiles: {
         '.': 'tiles/grass.png', f: 'tiles/wood.png', r: 'tiles/road.png', p: 'tiles/plaza.png',
         c: 'tiles/carpet.png', b: 'tiles/bridge.png', '#': 'tiles/wall_town.png',
-        w: 'tiles/wall_courtyard.png', T: 'props/tree_peach.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
+        w: 'tiles/wall_town.png', T: 'props/tree_peach.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
       },
       battleTile: 'tiles/plaza.png', battleBackdrop: null
     },
@@ -138,7 +138,7 @@
       tiles: {
         '.': 'tiles/grass.png', f: 'tiles/wood.png', r: 'tiles/road.png', p: 'tiles/jade.png',
         c: 'tiles/carpet.png', b: 'tiles/bridge.png', '#': 'tiles/wall_rock.png',
-        w: 'tiles/wall_courtyard.png', T: 'props/tree_pine.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
+        w: 'tiles/wall_town.png', T: 'props/tree_pine.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
       },
       battleTile: 'tiles/grass.png', battleBackdrop: null
     },
@@ -153,7 +153,7 @@
       tiles: {
         '.': 'tiles/grass.png', f: 'tiles/wood.png', r: 'tiles/road.png', p: 'tiles/plaza.png',
         c: 'tiles/carpet.png', b: 'tiles/bridge.png', '#': 'tiles/wall_town.png',
-        w: 'tiles/wall_courtyard.png', T: 'props/tree_peach.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
+        w: 'tiles/wall_town.png', T: 'props/tree_peach.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
       },
       battleTile: 'tiles/plaza.png', battleBackdrop: null
     },
@@ -183,7 +183,7 @@
       tiles: {
         '.': 'tiles/grass.png', f: 'tiles/jade.png', r: 'tiles/road.png', p: 'tiles/jade.png',
         c: 'tiles/carpet.png', b: 'tiles/bridge.png', '#': 'tiles/wall_shushan.png',
-        w: 'tiles/wall_courtyard.png', T: 'props/tree_pine.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
+        w: 'tiles/wall_town.png', T: 'props/tree_pine.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
       },
       battleTile: 'tiles/jade.png', battleBackdrop: null
     },
@@ -243,7 +243,7 @@
       tiles: {
         '.': 'tiles/mist_floor.png', f: 'tiles/wood.png', r: 'tiles/mist_floor.png', p: 'tiles/jade.png',
         c: 'tiles/carpet.png', b: 'tiles/bridge.png', '#': 'tiles/wall_shushan.png',
-        w: 'tiles/wall_courtyard.png', T: 'props/tree_pine.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
+        w: 'tiles/wall_town.png', T: 'props/tree_pine.png', W: 'props/tree_willow.png', B: 'props/bamboo_grove.png'
       },
       battleTile: 'tiles/mist_floor.png', battleBackdrop: 'backdrops/bg_lunar.jpg'
     },
@@ -483,7 +483,7 @@
       // 物理步伐落地微重力下壓（0 ~ 0.8px，模擬踏步足底著地承重，絕無平移飄移）
       bob = Math.sin(phase) > 0 ? 0 : 0.8;
     } else {
-      bob = 0;
+      bob = Math.sin(time * 2.8 + (x % 7)) * 1.1;
     }
     const sway = isWork ? Math.sin(time * 7.5) * 0.04 : 0;
 
@@ -767,10 +767,10 @@
       ctx.ellipse(sRx * 0.18, -sRy * 0.22, sRx, sRy, 0.28, 0, Math.PI * 2);
       ctx.fill();
 
-      // 2. 實體接觸暗核 (緊貼底線 y=0)
-      ctx.fillStyle = isBoss ? 'rgba(8, 2, 16, 0.78)' : 'rgba(4, 6, 10, 0.72)';
+      // 2. 實體接觸暗核 (柔和自然過渡，杜絕死黑大洞感)
+      ctx.fillStyle = isBoss ? 'rgba(12, 18, 30, 0.42)' : 'rgba(8, 12, 20, 0.36)';
       ctx.beginPath();
-      ctx.ellipse(0, 0.5 * scale, (isBoss ? 22 : 14) * scale, (isBoss ? 5.8 : 3.4) * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0.5 * scale, (isBoss ? 24 : 15) * scale, (isBoss ? 6.5 : 4.0) * scale, 0, 0, Math.PI * 2);
       ctx.fill();
     } else {
       // 飛行怪：柔和擴散離地懸浮投影
@@ -1067,9 +1067,9 @@
     game.miniMapRect = { x: mx, y: my, w: mw, h: mh };
 
     ctx.save();
-    ctx.fillStyle = 'rgba(7, 15, 30, 0.84)';
-    ctx.strokeStyle = 'rgba(226, 190, 107, 0.72)';
-    ctx.lineWidth = 1.4;
+    ctx.fillStyle = 'rgba(10, 18, 30, 0.90)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.65)';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(mx, my, mw, mh, 6) : ctx.rect(mx, my, mw, mh);
     ctx.fill();
@@ -1089,13 +1089,14 @@
       const row = map.grid[y];
       for (let x = 0; x < cols; x++) {
         const ch = row[x];
-        if (ch === '#' || ch === 'w') ctx.fillStyle = '#334155';
-        else if (ch === '~') ctx.fillStyle = map.theme === 'fire_cavern' ? '#9a3412' : '#1d4ed8';
-        else if (ch === 'B' || ch === 'T' || ch === 'W') ctx.fillStyle = '#166534';
-        else if ((ch === 'G' && !gate1Open) || (ch === 'H' && !gate2Open)) ctx.fillStyle = '#f59e0b';
-        else if (ch === 'r' || ch === 'p' || ch === 'b') ctx.fillStyle = '#94a3b8';
-        else if (ch === 'f' || ch === 'c') ctx.fillStyle = '#b45309';
-        else ctx.fillStyle = '#3f6212';
+        // 古風水墨宣紙輿圖配色 (消弭高飽和色塊，呈現典雅仙俠韻致)
+        if (ch === '#' || ch === 'w') ctx.fillStyle = '#2d3748';
+        else if (ch === '~') ctx.fillStyle = map.theme === 'fire_cavern' ? '#7c2d12' : '#1e3a5f';
+        else if (ch === 'B' || ch === 'T' || ch === 'W') ctx.fillStyle = '#1b4332';
+        else if ((ch === 'G' && !gate1Open) || (ch === 'H' && !gate2Open)) ctx.fillStyle = '#b45309';
+        else if (ch === 'r' || ch === 'p' || ch === 'b') ctx.fillStyle = '#64748b';
+        else if (ch === 'f' || ch === 'c') ctx.fillStyle = '#5c4033';
+        else ctx.fillStyle = '#283618';
         ctx.fillRect(ox + x * cell, oy + y * cell, Math.ceil(cell), Math.ceil(cell));
       }
     }
@@ -1289,13 +1290,18 @@
 
         if (ch === '#' || ch === 'w') {
           drawDiamond(ctx, pt.x, pt.y, TILE_W, TILE_H, pal.wallRight, null);
+          const hasX = (gx > 0 && (map.grid[gy][gx - 1] === '#' || map.grid[gy][gx - 1] === 'w')) ||
+                       (gx < cols - 1 && (map.grid[gy][gx + 1] === '#' || map.grid[gy][gx + 1] === 'w'));
+          const hasY = (gy > 0 && (map.grid[gy - 1][gx] === '#' || map.grid[gy - 1][gx] === 'w')) ||
+                       (gy < rows - 1 && (map.grid[gy + 1][gx] === '#' || map.grid[gy + 1][gx] === 'w'));
           entities.push({
             kind: 'wall',
             gx,
             gy,
             zBias: 0,
             isCourtyard: ch === 'w',
-            wallAsset: ch === 'w' ? (tileSet.w || 'tiles/wall_courtyard.png') : tileSet['#']
+            flipX: !hasX && hasY,
+            wallAsset: ch === 'w' ? (tileSet.w || 'tiles/wall_town.png') : tileSet['#']
           });
         } else if (ch === '~') {
           if (liquidImg) {
@@ -1493,10 +1499,14 @@
           ctx.save();
           if (occludingPlayer) ctx.globalAlpha = 0.42;
           const dw = 68;
-          const dh = ent.isCourtyard
-            ? 72
-            : 80;
-          ctx.drawImage(wImg, pt.x - dw / 2, pt.y + TILE_H / 2 - dh, dw, dh);
+          const dh = ent.isCourtyard ? 75 : 80;
+          if (ent.flipX) {
+            ctx.translate(pt.x, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(wImg, -dw / 2, pt.y + TILE_H / 2 - dh, dw, dh);
+          } else {
+            ctx.drawImage(wImg, pt.x - dw / 2, pt.y + TILE_H / 2 - dh, dw, dh);
+          }
           ctx.restore();
         } else {
           drawIsoBlockFallback(ctx, pt.x, pt.y, 20, pal.wallTop, pal.wallLeft, pal.wallRight);
@@ -1722,38 +1732,70 @@
         ctx.fillRect(0, 0, w, h);
       }
 
-      const stageCenterY = isPortrait ? h * 0.39 : h * 0.47;
-      const stageScale = isPortrait ? 0.92 : 1.18;
-      const bw = TILE_W * stageScale;
-      const bh = TILE_H * stageScale;
+      // 廣闊連貫之古陣戰場（消弭孤立懸浮鑽石塊，與遠山天幕自然相融）
+      const stageCenterY = isPortrait ? h * 0.41 : h * 0.48;
+      const bw = TILE_W * (isPortrait ? 1.05 : 1.25);
+      const bh = TILE_H * (isPortrait ? 1.05 : 1.25);
 
-      for (let gy = -3; gy <= 4; gy++) {
-        for (let gx = -3; gx <= 4; gx++) {
+      for (let gy = -4; gy <= 6; gy++) {
+        for (let gx = -6; gx <= 7; gx++) {
           const isoX = (gx - gy) * (bw / 2);
           const isoY = (gx + gy) * (bh / 2);
           const sx = w * 0.50 + isoX;
           const sy = stageCenterY + isoY;
+          if (sy < stageCenterY - 130 || sy > h + 70) continue;
+          if (sx < -80 || sx > w + 80) continue;
+
           if (stageTileImg) {
             ctx.drawImage(stageTileImg, sx - bw / 2, sy - bh / 2, bw, bh * 1.06);
           } else {
-            drawDiamond(ctx, sx, sy, bw, bh, pal.floor, 'rgba(0,0,0,0.25)');
-          }
-          if (gy === 4 || gx === 4) {
-            drawIsoCliffSkirt(
-              ctx, sx, sy, bw, bh, 28,
-              gy === 4, gx === 4,
-              pal.cliffLeft || '#455a6e', pal.cliffRight || '#253342'
-            );
+            drawDiamond(ctx, sx, sy, bw, bh, pal.floor, 'rgba(0,0,0,0.22)');
           }
         }
       }
 
+      // 戰場縱深柔和薄霧與地面光影過渡
+      const groundFog = ctx.createLinearGradient(0, stageCenterY - 130, 0, h);
+      groundFog.addColorStop(0, 'rgba(8, 16, 32, 0.58)');
+      groundFog.addColorStop(0.35, 'rgba(8, 16, 32, 0.04)');
+      groundFog.addColorStop(0.85, 'rgba(6, 12, 24, 0.22)');
+      groundFog.addColorStop(1, 'rgba(4, 8, 18, 0.65)');
+      ctx.fillStyle = groundFog;
+      ctx.fillRect(0, stageCenterY - 130, w, h - (stageCenterY - 130));
+
+      // 我方足下：北斗七曜太極守護陣
+      const pCx = w * (isPortrait ? 0.32 : 0.34);
+      const pCy = stageCenterY + 45;
       ctx.save();
-      ctx.translate(w * 0.50, stageCenterY + 10);
-      ctx.strokeStyle = 'rgba(255, 224, 130, 0.22)';
-      ctx.lineWidth = 1.6;
+      ctx.translate(pCx, pCy);
+      ctx.scale(1, 0.48);
+      ctx.rotate(time * 0.14);
+      ctx.strokeStyle = 'rgba(79, 195, 247, 0.32)';
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
-      ctx.ellipse(0, 0, 100 * stageScale, 48 * stageScale, 0, 0, Math.PI * 2);
+      ctx.arc(0, 0, 92, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(100, 216, 203, 0.20)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 68, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // 敵方足下：九幽鎮魔伏妖陣
+      const eCx = w * (isPortrait ? 0.68 : 0.68);
+      const eCy = stageCenterY - 5;
+      ctx.save();
+      ctx.translate(eCx, eCy);
+      ctx.scale(1, 0.48);
+      ctx.rotate(-time * 0.12);
+      ctx.strokeStyle = 'rgba(255, 171, 64, 0.30)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(0, 0, 108, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255, 112, 67, 0.18)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 78, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }
@@ -1805,25 +1847,28 @@
         const staggerY = (battle.enemies.length > 1 && idx % 2 === 1) ? 32 : 0;
         const by = Math.max(54, pos.y - topOffset - staggerY);
 
-        ctx.fillStyle = 'rgba(7, 15, 32, 0.88)';
-        ctx.fillRect(bx - 5, by - 17, barW + 10, 26);
-        ctx.strokeStyle = en.isBoss ? 'rgba(255, 202, 40, 0.72)' : 'rgba(144, 202, 249, 0.45)';
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(bx - 5, by - 17, barW + 10, 26);
+        // 首領血條由頂部專屬 Boss HUD 華麗呈現，小怪則保留精緻極簡懸浮條
+        if (!en.isBoss) {
+          const miniW = isPortrait ? 66 : 78;
+          const mx = pos.x - miniW / 2;
+          const my = pos.y - 72 * (isPortrait ? 0.82 : 1.0);
 
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(bx, by, barW, 5.5);
-        const hpGrad = ctx.createLinearGradient(bx, by, bx + barW, by);
-        hpGrad.addColorStop(0, en.isBoss ? '#ff8a65' : '#ef5350');
-        hpGrad.addColorStop(1, en.isBoss ? '#ffca28' : '#e53935');
-        ctx.fillStyle = hpGrad;
-        ctx.fillRect(bx, by, Math.max(0, (en.hp / en.maxHp) * barW), 5.5);
+          ctx.fillStyle = 'rgba(8, 14, 26, 0.78)';
+          ctx.beginPath();
+          ctx.rect(mx - 2, my - 2, miniW + 4, 7);
+          ctx.fill();
 
-        const elemInfo = PalX.ELEMENTS[en.elem] || PalX.ELEMENTS.none;
-        ctx.font = `bold ${isPortrait ? 11 : 12}px "Microsoft JhengHei", serif`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = elemInfo.color;
-        ctx.fillText(`[${elemInfo.name}] ${en.name}`, bx + barW / 2, by - 4);
+          ctx.fillStyle = '#ef5350';
+          ctx.beginPath();
+          ctx.rect(mx, my, Math.max(0, (en.hp / en.maxHp) * miniW), 3.5);
+          ctx.fill();
+
+          const elemInfo = PalX.ELEMENTS[en.elem] || PalX.ELEMENTS.none;
+          ctx.font = `bold 10px "Noto Serif TC", serif`;
+          ctx.textAlign = 'center';
+          ctx.fillStyle = elemInfo.color;
+          ctx.fillText(`[${elemInfo.name}] ${en.name}`, pos.x, my - 4);
+        }
       }
       ctx.restore();
     });

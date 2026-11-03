@@ -801,6 +801,8 @@
       const tw = document.getElementById('toast-container');
       if (tw) tw.innerHTML = '';
       document.getElementById('virtual-controls').classList.add('hidden');
+      const topHud = document.getElementById('top-hud');
+      if (topHud) topHud.classList.add('hidden');
       document.getElementById('battle-overlay').classList.remove('hidden');
       this.updateBattleHud();
     }
@@ -808,6 +810,10 @@
     hideBattleOverlay() {
       this.closeBattleDrawer();
       document.getElementById('battle-overlay').classList.add('hidden');
+      const topHud = document.getElementById('top-hud');
+      if (topHud) topHud.classList.remove('hidden');
+      const bossHud = document.getElementById('battle-boss-hud');
+      if (bossHud) bossHud.classList.add('hidden');
       if (!this.game.dialogueActive) {
         document.getElementById('virtual-controls').classList.remove('hidden');
       }
@@ -819,6 +825,34 @@
 
       const latestLog = b.logs.length ? b.logs[b.logs.length - 1] : '拔劍迎敵！';
       document.getElementById('battle-log-bar').textContent = latestLog;
+
+      // 頂部首領專屬血條同步 (Boss Cinematic HUD)
+      const bossEnemy = b.enemies.find((en) => !en.dead && en.isBoss) || (b.enemies[b.selectedEnemyIdx] && b.enemies[b.selectedEnemyIdx].isBoss ? b.enemies[b.selectedEnemyIdx] : null);
+      const bossHud = document.getElementById('battle-boss-hud');
+      if (bossHud) {
+        if (bossEnemy && !bossEnemy.dead) {
+          bossHud.classList.remove('hidden');
+          const elem = PalX.ELEMENTS[bossEnemy.elem] || PalX.ELEMENTS.none;
+          const elemEl = document.getElementById('boss-hud-elem');
+          if (elemEl) {
+            elemEl.textContent = `[${elem.name}]`;
+            elemEl.style.color = elem.color;
+          }
+          const nameEl = document.getElementById('boss-hud-name');
+          if (nameEl) nameEl.textContent = bossEnemy.name;
+          const pct = Math.max(0, Math.min(100, Math.round((bossEnemy.hp / bossEnemy.maxHp) * 100)));
+          const fillEl = document.getElementById('boss-hud-fill');
+          const lagEl = document.getElementById('boss-hud-lag');
+          if (fillEl) fillEl.style.width = pct + '%';
+          if (lagEl) {
+            setTimeout(() => { if (lagEl) lagEl.style.width = pct + '%'; }, 160);
+          }
+          const numEl = document.getElementById('boss-hud-hp-num');
+          if (numEl) numEl.textContent = `${bossEnemy.hp} / ${bossEnemy.maxHp} (${pct}%)`;
+        } else {
+          bossHud.classList.add('hidden');
+        }
+      }
 
       // 敵方鎖定目標切換列
       const targetWrap = document.getElementById('battle-enemy-targets');
@@ -867,7 +901,9 @@
             <canvas class="bhero-portrait" data-pid="${h.id}" width="54" height="54"></canvas>
             <div class="bhero-info">
               <div class="bhero-name">${h.name} <span class="btags">${tags.join('')}</span></div>
+              <div class="bhero-bar-bg"><div class="bhero-bar-fill hp-fill" style="width:${Math.max(0, Math.min(100, Math.round((h.hp/h.maxHp)*100)))}%"></div></div>
               <div class="bhero-stat hp-row"><span>體力</span><b>${h.hp}/${h.maxHp}</b></div>
+              <div class="bhero-bar-bg"><div class="bhero-bar-fill mp-fill" style="width:${Math.max(0, Math.min(100, Math.round((h.mp/h.maxMp)*100)))}%"></div></div>
               <div class="bhero-stat mp-row"><span>真氣</span><b>${h.mp}/${h.maxMp}</b></div>
             </div>
           </div>
