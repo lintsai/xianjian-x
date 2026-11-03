@@ -40,9 +40,9 @@
       if (vw <= 0 || vh <= 0) return;
 
       // 經典仙劍 2.5D 黃金鏡頭比例：適度拉近視角，人物與精緻場景主體突出，杜絕遠景螻蟻感
-      let logicalW = 880;
+      let logicalW = 620;
       if (vw < 640 || vh > vw) {
-        logicalW = Math.max(420, Math.min(540, Math.round(vw * 1.15)));
+        logicalW = Math.max(380, Math.min(480, Math.round(vw * 0.95)));
       }
       this.game.logicalW = logicalW;
 

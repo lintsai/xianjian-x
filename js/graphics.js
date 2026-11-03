@@ -486,6 +486,54 @@
     }
     const sway = isWork ? Math.sin(time * 7.5) * 0.04 : 0;
 
+    let assetPath = null;
+    if (HERO_IDS[spriteId]) {
+      assetPath = opts.battle ? `heroes_battle/${spriteId}.png` : `heroes/${spriteId}.png`;
+    } else if (spriteId === 'fox') {
+      assetPath = 'monsters/fox.png';
+    } else {
+      assetPath = `npcs/${spriteId}.png`;
+    }
+    const img = getAsset(assetPath) || getAsset('npcs/elder_man.png');
+
+    // 經典仙劍 2.5D 高精度比例（地圖主角與NPC高達 72px，孩童 52px，白狐 40px；戰鬥 80~88px）
+    const baseH = opts.battle
+      ? (spriteId === 'aman' ? 78 : (spriteId === 'yueling' ? 80 : 88))
+      : (spriteId === 'child_boy' ? 52 : (spriteId === 'fox' ? 40 : 72));
+
+    let drawH = baseH;
+    let drawW = 45;
+    let frameW = 80;
+    let frameH = 128;
+    let frameIdx = 0;
+    let isMultiFrame = false;
+
+    if (img) {
+      isMultiFrame = img.naturalWidth >= img.naturalHeight * 3.2;
+      if (isMultiFrame) {
+        const totalFrames = 8;
+        frameW = img.naturalWidth / totalFrames;
+        frameH = img.naturalHeight;
+        if (opts.moving) {
+          const walkCycle = Math.floor((phase / (Math.PI * 0.5)) % 4 + 4) % 4;
+          frameIdx = 4 + walkCycle;
+        } else if (isWork) {
+          frameIdx = Math.floor(time * 5) % 4;
+        } else if (opts.dead || isCollapse || opts.kneel) {
+          frameIdx = 0;
+        } else {
+          frameIdx = Math.floor(time * 3.2) % 4;
+        }
+        const aspect = frameW / Math.max(1, frameH);
+        drawH = baseH;
+        drawW = drawH * aspect;
+      } else {
+        const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
+        drawH = baseH;
+        drawW = drawH * aspect;
+      }
+    }
+
     ctx.save();
     ctx.translate(x, y);
 
@@ -497,55 +545,119 @@
       ctx.strokeStyle = 'rgba(92, 68, 36, 0.9)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.ellipse(0, 3, 25 * scale, 11 * scale, -0.15, 0, Math.PI * 2);
+      ctx.ellipse(0, 3, 28 * scale, 12 * scale, -0.15, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
     }
 
-    // 1. 腳下柔和沉穩落地漫反射陰影 (Ambient Floor Shadow) —— 嚴格鎖定 2:1 斜角地磚傾角 (0.529)，漸層自然擴散
+    // =========================================================================
+    // 物理真實 2.5D 東南向漫射投射陰影 + 雙足鞋底接觸暗核 (Physical Grounding & Shadow)
+    // =========================================================================
     if (!isFloat) {
-      const shadowR = opts.battle ? 24 : (isCollapse ? 20 : 14);
-      const shadowH = shadowR * 0.529;
-      const shadowGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, shadowR * scale);
-      shadowGrad.addColorStop(0, 'rgba(12, 16, 26, 0.42)');
-      shadowGrad.addColorStop(0.55, 'rgba(12, 16, 26, 0.18)');
-      shadowGrad.addColorStop(1, 'rgba(12, 16, 26, 0)');
-      ctx.fillStyle = shadowGrad;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, shadowR * scale, shadowH * scale, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 2. 雙足底接地接觸暗核 (Contact Occlusion Spots) —— 緊貼鞋底踏線，100% 物理貼地，徹底消除懸空
-      if (!isCollapse && !opts.dead) {
-        ctx.fillStyle = 'rgba(8, 10, 16, 0.65)';
-        // 左足接觸點 (朝前)
+      if (opts.dead || isCollapse) {
+        // 陣亡倒地或昏迷臥榻：沿地面橫向鋪開之身體接觸陰影
+        const deadR = drawH * 0.38 * scale;
+        const deadH = deadR * 0.42;
+        const deadGrad = ctx.createRadialGradient(0, 2, 2, 0, 2, deadR);
+        deadGrad.addColorStop(0, 'rgba(10, 14, 24, 0.52)');
+        deadGrad.addColorStop(0.7, 'rgba(10, 14, 24, 0.22)');
+        deadGrad.addColorStop(1, 'rgba(10, 14, 24, 0)');
+        ctx.fillStyle = deadGrad;
         ctx.beginPath();
-        ctx.ellipse(-5 * scale, 0.5 * scale, 4.2 * scale, 2.2 * scale, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 2 * scale, deadR, deadH, -0.12, 0, Math.PI * 2);
         ctx.fill();
-        // 右足接觸點 (朝後微偏上)
+      } else if (opts.battle) {
+        // 戰鬥舞台 45 度透視陰影 + 雙足著地接觸
+        const sRx = 26 * scale;
+        const sRy = 11 * scale;
+        const bGrad = ctx.createRadialGradient(4, -2, 2, 4, -2, sRx);
+        bGrad.addColorStop(0, 'rgba(10, 14, 24, 0.50)');
+        bGrad.addColorStop(0.65, 'rgba(10, 14, 24, 0.20)');
+        bGrad.addColorStop(1, 'rgba(10, 14, 24, 0)');
+        ctx.fillStyle = bGrad;
         ctx.beginPath();
-        ctx.ellipse(5 * scale, -2.2 * scale, 3.8 * scale, 2.0 * scale, 0, 0, Math.PI * 2);
+        ctx.ellipse(4 * scale, -2 * scale, sRx, sRy, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 戰鬥雙足底接觸暗核
+        ctx.fillStyle = 'rgba(4, 6, 12, 0.72)';
+        ctx.beginPath();
+        ctx.ellipse(-7 * scale, 0.5 * scale, 4.8 * scale, 2.2 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(10 * scale, -3.8 * scale, 4.2 * scale, 2.0 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // 地圖場景：西北上方日光 (NW Sun) 投射於 2:1 地磚之東南向漫反射陰影 (SE Cast Shadow)
+        // 嚴格錨定鞋底踏線，底緣絕不向下溢出於前足，100% 杜絕懸空浮空感！
+        const isFacingLeft = !!opts.flipX;
+        const castX = (isFacingLeft ? -drawW * 0.06 : drawW * 0.16) * scale;
+        const castY = (-drawH * 0.035) * scale;
+        const castRx = drawW * 0.46 * scale;
+        const castRy = drawW * 0.22 * scale;
+        const castRot = 0.32; // ~18.3度，吻合 2:1 斜角地磚投影傾角
+
+        const shadowGrad = ctx.createRadialGradient(castX, castY, 2, castX, castY, castRx);
+        shadowGrad.addColorStop(0, 'rgba(8, 12, 22, 0.44)');
+        shadowGrad.addColorStop(0.55, 'rgba(10, 14, 24, 0.20)');
+        shadowGrad.addColorStop(1, 'rgba(10, 14, 24, 0)');
+        ctx.fillStyle = shadowGrad;
+        ctx.beginPath();
+        ctx.ellipse(castX, castY, castRx, castRy, castRot, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 雙足鞋底接地環境光遮蔽暗核 (Dual Shoe Sole Contact AO)
+        // 前足（左腳）踏地 y=0，後足（右腳）踏地 y=-4.5（透視深度）。
+        // 隨行走步態動態交替接地承重與微抬腿，踏地感無比扎實！
+        let frontAlpha = 0.72;
+        let backAlpha = 0.65;
+        let frontLift = 0;
+        let backLift = 0;
+
+        if (opts.moving) {
+          const stepSin = Math.sin(phase);
+          frontAlpha = 0.42 + 0.36 * Math.max(0, stepSin);
+          backAlpha = 0.42 + 0.36 * Math.max(0, -stepSin);
+          frontLift = Math.max(0, -stepSin) * 1.5;
+          backLift = Math.max(0, stepSin) * 1.5;
+        }
+
+        const frontX = (isFacingLeft ? drawW * 0.04 : -drawW * 0.04) * scale;
+        const frontY = 0.5 * scale;
+        const backX = (isFacingLeft ? -drawW * 0.28 : drawW * 0.28) * scale;
+        const backY = (-drawH * 0.062) * scale;
+
+        // 前足接觸暗核
+        ctx.fillStyle = `rgba(4, 6, 12, ${frontAlpha})`;
+        ctx.beginPath();
+        ctx.ellipse(frontX, (frontY - frontLift * scale), 4.8 * scale, 2.2 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 後足接觸暗核
+        ctx.fillStyle = `rgba(4, 6, 12, ${backAlpha})`;
+        ctx.beginPath();
+        ctx.ellipse(backX, (backY - backLift * scale), 4.2 * scale, 1.9 * scale, 0, 0, Math.PI * 2);
         ctx.fill();
       }
+    } else {
+      // 幽魂 NPC：離地幽浮虛幻投影
+      const ghostR = 16 * scale;
+      const gGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, ghostR);
+      gGrad.addColorStop(0, 'rgba(128, 222, 234, 0.26)');
+      gGrad.addColorStop(1, 'rgba(128, 222, 234, 0)');
+      ctx.fillStyle = gGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 8 * scale, ghostR, ghostR * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     if (opts.tiangang) {
       ctx.strokeStyle = '#ffd54f';
       ctx.lineWidth = 2.4;
       ctx.beginPath();
-      ctx.ellipse(0, 0, (shadowR + 6 + Math.sin(time * 8) * 2.5) * scale, (shadowR * 0.55) * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, (26 + Math.sin(time * 8) * 2.5) * scale, 13 * scale, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
-
-    let assetPath = null;
-    if (HERO_IDS[spriteId]) {
-      assetPath = opts.battle ? `heroes_battle/${spriteId}.png` : `heroes/${spriteId}.png`;
-    } else if (spriteId === 'fox') {
-      assetPath = 'monsters/fox.png';
-    } else {
-      assetPath = `npcs/${spriteId}.png`;
-    }
-    const img = getAsset(assetPath) || getAsset('npcs/elder_man.png');
 
     ctx.save();
     ctx.scale(scale, scale);
@@ -565,39 +677,10 @@
     }
 
     if (img) {
-      const baseH = opts.battle
-        ? (spriteId === 'aman' ? 74 : (spriteId === 'yueling' ? 76 : 84))
-        : (spriteId === 'child_boy' ? 40 : (spriteId === 'fox' ? 34 : 50));
-
-      const isMultiFrame = img.naturalWidth >= img.naturalHeight * 3.2;
       if (isMultiFrame) {
-        const totalFrames = 8;
-        const frameW = img.naturalWidth / totalFrames;
-        const frameH = img.naturalHeight;
-
-        let frameIdx = 0;
-        if (opts.moving) {
-          // 行走步態循環：使用 4~7 影格（跨步、接地、交替）
-          const walkCycle = Math.floor((phase / (Math.PI * 0.5)) % 4 + 4) % 4;
-          frameIdx = 4 + walkCycle;
-        } else if (isWork) {
-          frameIdx = Math.floor(time * 5) % 4;
-        } else if (opts.dead || isCollapse || opts.kneel) {
-          frameIdx = 0;
-        } else {
-          // 待機自然呼吸循環：使用 0~3 影格
-          frameIdx = Math.floor(time * 3.2) % 4;
-        }
-
-        const aspect = frameW / Math.max(1, frameH);
-        const drawH = baseH;
-        const drawW = drawH * aspect;
         const sx = frameIdx * frameW;
         ctx.drawImage(img, sx, 0, frameW, frameH, -drawW / 2, -drawH + bob + 1, drawW, drawH);
       } else {
-        const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
-        const drawH = baseH;
-        const drawW = drawH * aspect;
         ctx.drawImage(img, -drawW / 2, -drawH + bob + 1, drawW, drawH);
       }
     } else {
@@ -657,42 +740,61 @@
       ctx.filter = 'brightness(2.3) contrast(1.15)';
     }
 
-    // 怪物/首領接地接觸暗核 (陸生怪穩固著地，不懸空漂浮)
+    const assetPath = spriteId && spriteId.startsWith('boss_') ? `bosses/${spriteId}.png` : `monsters/${spriteId}.png`;
+    const img = getAsset(assetPath) || getAsset('monsters/plant.png');
+
+    let baseH = 72;
+    if (spriteId === 'boss_shuimoshou') baseH = 126;
+    else if (spriteId === 'boss_yueling') baseH = 86;
+    else if (isBoss) baseH = 104;
+
+    const drawH = baseH * scale;
+    const aspect = img ? (img.naturalWidth / Math.max(1, img.naturalHeight)) : 0.8;
+    const drawW = drawH * aspect;
+
+    // 怪物/首領地面陰影與接觸暗核 (陸生怪穩固著地，不懸空漂浮)
     if (!isFloating) {
-      ctx.fillStyle = isBoss ? 'rgba(12, 4, 18, 0.78)' : 'rgba(8, 6, 4, 0.7)';
+      // 1. 東南向地面投射陰影
+      const sRx = (isBoss ? 34 : 22) * scale;
+      const sRy = (isBoss ? 14 : 9) * scale;
+      const grad = ctx.createRadialGradient(sRx * 0.18, -sRy * 0.22, 2, sRx * 0.18, -sRy * 0.22, sRx);
+      grad.addColorStop(0, isBoss ? 'rgba(16, 6, 28, 0.52)' : 'rgba(8, 12, 18, 0.44)');
+      grad.addColorStop(0.65, isBoss ? 'rgba(16, 6, 28, 0.20)' : 'rgba(8, 12, 18, 0.18)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.ellipse(0, 0.5 * scale, (isBoss ? 22 : 12) * scale, (isBoss ? 7 : 4) * scale, 0, 0, Math.PI * 2);
+      ctx.ellipse(sRx * 0.18, -sRy * 0.22, sRx, sRy, 0.28, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. 實體接觸暗核 (緊貼底線 y=0)
+      ctx.fillStyle = isBoss ? 'rgba(8, 2, 16, 0.78)' : 'rgba(4, 6, 10, 0.72)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0.5 * scale, (isBoss ? 22 : 14) * scale, (isBoss ? 5.8 : 3.4) * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // 飛行怪：柔和擴散離地懸浮投影
+      const hScale = Math.max(0.6, 1 - hover * 0.05);
+      const sRx = (isBoss ? 28 : 16) * scale * hScale;
+      const sRy = sRx * 0.45;
+      const grad = ctx.createRadialGradient(0, 0, 1, 0, 0, sRx);
+      grad.addColorStop(0, 'rgba(8, 12, 22, 0.30)');
+      grad.addColorStop(1, 'rgba(8, 12, 22, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(0, 7 * scale, sRx, sRy, 0, 0, Math.PI * 2);
       ctx.fill();
     }
-
-    const sRx = (isBoss ? 32 : 18) * scale;
-    const sRy = (isBoss ? 12 : 7.5) * scale;
-    ctx.fillStyle = isBoss ? 'rgba(18, 6, 32, 0.58)' : 'rgba(0, 0, 0, 0.48)';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, sRx, sRy, 0, 0, Math.PI * 2);
-    ctx.fill();
 
     if (isBoss) {
       ctx.strokeStyle = 'rgba(255, 112, 67, 0.38)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.ellipse(0, 0, sRx + 4 + Math.sin(time * 5) * 3, sRy + 2, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, (isBoss ? 36 : 20) * scale + Math.sin(time * 5) * 3, (isBoss ? 15 : 8) * scale, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
 
-    const assetPath = spriteId && spriteId.startsWith('boss_') ? `bosses/${spriteId}.png` : `monsters/${spriteId}.png`;
-    const img = getAsset(assetPath) || getAsset('monsters/plant.png');
-
     if (img) {
-      let baseH = 72;
-      if (spriteId === 'boss_shuimoshou') baseH = 126;
-      else if (spriteId === 'boss_yueling') baseH = 86;
-      else if (isBoss) baseH = 104;
-
-      const drawH = baseH * scale;
-      const aspect = img.naturalWidth / Math.max(1, img.naturalHeight);
-      const drawW = drawH * aspect;
-      ctx.drawImage(img, -drawW / 2, -drawH + (isFloating ? hover - 3 : hover), drawW, drawH);
+      ctx.drawImage(img, -drawW / 2, -drawH + (isFloating ? hover - 3 : hover) + 1, drawW, drawH);
     } else {
       ctx.fillStyle = isBoss ? '#8e24aa' : '#43a047';
       ctx.beginPath();
@@ -719,9 +821,19 @@
       const spec = DECOR_SPECS[obj.sprite] || { h: 54, yOff: 0, shadowR: 16 };
       const img = getAsset(`props/${obj.sprite}.png`);
       if (obj.sprite !== 'paifang' && obj.sprite !== 'flower_bush') {
-        ctx.fillStyle = 'rgba(0,0,0,0.38)';
+        const sRx = spec.shadowR;
+        const sRy = spec.shadowR * 0.44;
+        const grad = ctx.createRadialGradient(sRx * 0.15, -sRy * 0.2, 1, sRx * 0.15, -sRy * 0.2, sRx);
+        grad.addColorStop(0, 'rgba(10, 14, 22, 0.44)');
+        grad.addColorStop(0.65, 'rgba(10, 14, 22, 0.18)');
+        grad.addColorStop(1, 'rgba(10, 14, 22, 0)');
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.ellipse(0, 0, spec.shadowR, spec.shadowR * 0.44, 0, 0, Math.PI * 2);
+        ctx.ellipse(sRx * 0.15, -sRy * 0.2, sRx, sRy, 0.25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(4, 6, 12, 0.65)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, sRx * 0.68, sRy * 0.48, 0, 0, Math.PI * 2);
         ctx.fill();
       }
       if (img) {
@@ -870,10 +982,10 @@
         flipX: !!obj.runtimeFacingLeft,
         pose
       });
-      labelY = pose === 'kneel' ? -24 : (obj.sprite === 'child_boy' || obj.sprite === 'fox' ? -42 : -52);
+      labelY = pose === 'kneel' ? -28 : (obj.sprite === 'child_boy' || obj.sprite === 'fox' ? -58 : -78);
     } else if (obj.type === 'boss') {
-      drawMonsterSprite(ctx, 0, 0, obj.sprite || 'boss_chigui', time, { scale: 0.78, isBoss: true });
-      labelY = -86;
+      drawMonsterSprite(ctx, 0, 0, obj.sprite || 'boss_chigui', time, { scale: 0.95, isBoss: true });
+      labelY = -106;
     }
 
     // 頭頂圓角古風名牌 + 服務徽章 + 任務標記 + 氣泡短語
@@ -1021,7 +1133,7 @@
   // 45度斜視角地圖完整渲染
   // =========================================================================
   function renderMapScene(ctx, canvas, game) {
-    const logicalW = game.logicalW || 880;
+    const logicalW = game.logicalW || 620;
     const uniformScale = canvas.width / logicalW;
 
     ctx.save();
@@ -1532,7 +1644,7 @@
   }
 
   function renderBattleScene(ctx, canvas, battle, mapTheme, time) {
-    const logicalW = (battle.game && battle.game.logicalW) || 880;
+    const logicalW = (battle.game && battle.game.logicalW) || 620;
     const uniformScale = canvas.width / logicalW;
 
     ctx.save();
@@ -1546,7 +1658,7 @@
     const h = canvas.height / uniformScale;
     if (battle.game) battle.game.logicalH = h;
     const isPortrait = w < h * 0.92;
-    const unitScale = isPortrait ? 1.12 : 1.36;
+    const unitScale = isPortrait ? 1.0 : 1.15;
     const pal = THEME_PALETTES[mapTheme] || THEME_PALETTES.lotus_island;
 
     ctx.save();
